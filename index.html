@@ -158,6 +158,8 @@ table.t tr.warn td{background:color-mix(in srgb,var(--warn) 10%,transparent)}
 table.t td select{font-size:13px;padding:2px 4px}
 table.t tr.invrow td{background:var(--soft)}
 table.pay td.small:last-child{white-space:nowrap}
+table.pay td.rowno{white-space:nowrap}
+table.pay td.rowno button{margin-left:6px}
 .pickcell{display:flex;gap:4px;align-items:center}
 button.mini{padding:2px 8px;font-size:12px}
 #acctDlg{max-width:860px}
@@ -433,8 +435,8 @@ const STEPS = [
    act:[['全選待確認','selReview'],['批次改分類','batch'],['分類規則','rules'],['刪除未分類','delOther'],['全部確認','confirmAll',1]]},
   {n:4, t:'欄位核對',  s:'依類別擷取欄位',  hint:'依類別切換表格，核對日期、金額等欄位。',
    act:[['只看缺欄位','missing'],['確認欄位','toExport',1]]},
-  {n:5, t:'匯出 / 帶入', s:'Excel・XML・差旅',  hint:'依用途匯出，或把發票、收據帶到受款人 XML 流程。',
-   act:[['分類 Excel','tab:xlsx'],['受款人 XML','tab:xml'],['差旅費明細','tab:travel'],['帳戶清冊','tab:bank'],['下載','dl',1]]},
+  {n:5, t:'匯出 / 帶入', s:'Excel・XML・差旅',  hint:'依用途匯出，或把發票、收據帶到匯出GBA受款XML。',
+   act:[['分類 Excel','tab:xlsx'],['匯出GBA受款XML','tab:xml'],['差旅費明細','tab:travel'],['帳戶清冊','tab:bank'],['下載','dl',1]]},
 ];
 
 let cur = 1, done = new Set(), filter = 'all', filter4 = 'inv', sel = 0, onlyMissing = false, loaded = false, ocrDone = false;
@@ -781,7 +783,7 @@ function renderTable(){
 /* 步驟 5 */
 /* 步驟 5：匯出／帶入 */
 let expTab = 'xlsx';
-const EXP_TABS = {xlsx:'分類 Excel', xml:'受款人 XML', travel:'差旅費明細', bank:'帳戶清冊'};
+const EXP_TABS = {xlsx:'分類 Excel', xml:'匯出GBA受款XML', travel:'差旅費明細', bank:'帳戶清冊'};
 function setExpTab(t){ expTab = t; renderStepper(); renderSummary(); }
 
 const num = s => { const n = +String(s??'').replace(/[,，\s元]/g,''); return isFinite(n) ? n : 0; };
@@ -952,6 +954,11 @@ function exportXml(){
 }
 function setPay(i,k,val){ payees[i][k] = val.trim(); refreshXmlCheck(); }
 function setX(k,val){ xcfg[k] = val.trim(); saveXcfg(); if(k==='explain') payees.forEach(p=>{ if(!p.explain || EXPLAINS.includes(p.explain)) p.explain = xcfg.explain; }); k==='explain'?renderXml():refreshXmlCheck(); }
+function deletePayee(i){
+  const p = payees[i];
+  if(!confirm(`確定要刪除第 ${i+1} 位受款人「${p.customername||'未填名稱'}」？\n只會從這次匯出的 XML 移除，不會刪掉單據；按「重新帶入」可以找回來。`)) return;
+  payees.splice(i,1); renderXml(); toast(`已刪除受款人「${p.customername||'未填名稱'}」`);
+}
 function rebuildPayees(){ payees = buildPayees(); renderXml(); toast('已依目前的分類與欄位重新帶入'); }
 function refreshXmlCheck(){
   const {errs, warns} = validatePayees();
@@ -974,7 +981,7 @@ function renderXml(){
     </div>
     <div class="small muted" style="margin:6px 0 10px">發票依賣方統編合併成一位受款人（每張發票一筆 &lt;發票明細&gt;）；收據一張一位受款人。戶名和「銀行帳號」類單據相同時，帳戶資料會自動帶入。表格可直接修改。</div>
     <div class="tblwrap"><table class="t pay"><thead><tr><th>#</th>${PAY_EDIT.map(([,l])=>`<th>${l}</th>`).join('')}<th>來源單據</th></tr></thead><tbody>
-    ${payees.map((p,i)=>`<tr><td>${i+1}</td>${PAY_EDIT.map(([k,,w])=>`<td${k==='checkamt'?' class="num"':''}>${
+    ${payees.map((p,i)=>`<tr><td class="rowno">${i+1}<button class="mini danger" title="刪除這位受款人" onclick="deletePayee(${i})">刪除</button></td>${PAY_EDIT.map(([k,,w])=>`<td${k==='checkamt'?' class="num"':''}>${
         k==='receipttype' ? `<select onchange="setPay(${i},'${k}',this.value)">${opt(RECEIPT_TYPES,p[k])}</select>`
         : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button></span>`
         : `<input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
@@ -1042,7 +1049,7 @@ async function exportTravel(){
 const BANK_COLS = ['戶名','銀行','分行','金融機構代號','帳號'];
 function renderBankList(){
   const rows = DOCS.filter(d=>d.cat==='bank');
-  $('#exp-bank').innerHTML = rows.length ? `<div class="small muted" style="margin-bottom:8px">從存摺封面整理出的帳戶，帶入受款人 XML 時會依戶名自動對應。要修改請回步驟 4。</div>
+  $('#exp-bank').innerHTML = rows.length ? `<div class="small muted" style="margin-bottom:8px">從存摺封面整理出的帳戶，帶入「匯出GBA受款XML」時會依戶名自動對應。要修改請回步驟 4。</div>
     <div class="tblwrap"><table class="t"><thead><tr><th>#</th>${BANK_COLS.map(c=>`<th>${c}</th>`).join('')}<th>單據</th></tr></thead><tbody>
     ${rows.map((d,i)=>`<tr${BANK_COLS.some(c=>!d.v[c])?' class="warn"':''}><td>${i+1}</td>${BANK_COLS.map(c=>`<td>${esc(d.v[c]||'')}</td>`).join('')}<td class="small">${esc(d.f)}</td></tr>`).join('')}
     </tbody></table></div>` : '<div class="small muted">沒有「銀行帳號」類單據。</div>';
