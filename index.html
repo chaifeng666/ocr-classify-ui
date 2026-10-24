@@ -151,9 +151,19 @@ table.t tr.warn td{background:color-mix(in srgb,var(--warn) 10%,transparent)}
 .sumgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
 .sum{border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px;padding:10px 12px}
 .sum b{font-size:22px;display:block}
-.exp{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:14px}
-.exp .panel{margin:0}
-.exp h3{margin:0 0 4px;font-size:16px}
+.actions button.tab.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:600}
+.xcfg{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end}
+.xcfg label{display:flex;flex-direction:column;font-size:13px;color:var(--muted)}
+.xcfg input,.xcfg select{color:var(--text)}
+table.t td select{font-size:13px;padding:2px 4px}
+table.t tr.invrow td{background:var(--soft)}
+table.pay td.small:last-child{white-space:nowrap}
+.chk{border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:8px}
+.chk ul{margin:4px 0 0;padding-left:20px;max-height:200px;overflow:auto}
+.chk.err{background:color-mix(in srgb,var(--err) 10%,transparent);border:1px solid var(--err)}
+.chk.warn{background:color-mix(in srgb,var(--warn) 10%,transparent);border:1px solid var(--warn)}
+.chk.ok{background:color-mix(in srgb,var(--ok) 10%,transparent);border:1px solid var(--ok)}
+#xmlPreview{width:100%;min-height:240px;font:12px/1.5 ui-monospace,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--bg);color:var(--text);margin-top:6px}
 
 /* 規則對話框 & toast */
 dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);max-width:760px;width:calc(100% - 32px);padding:18px}
@@ -237,11 +247,12 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     <div class="panel">
       <div class="sumgrid" id="sumgrid"></div>
     </div>
-    <div class="exp">
-      <div class="panel"><h3>分類 Excel</h3><div class="small muted">每一類一個工作表，另附總表（檔名、類別、日期、金額）。</div></div>
-      <div class="panel"><h3>帶入受款人 XML</h3><div class="small muted">發票與收據帶到既有的「發票清單核對」與「受款人 XML」流程（ocr.html 第 4～9 步）。</div></div>
-      <div class="panel"><h3>差旅費明細</h3><div class="small muted">高鐵、火車、計程車依日期排序，整理成國內出差旅費報告表的交通費欄。</div></div>
-      <div class="panel"><h3>帳戶清冊</h3><div class="small muted">存摺封面整理出銀行、分行、帳號、戶名，供受款人資料使用。</div></div>
+    <div class="panel">
+      <h3 style="margin:0 0 8px;font-size:17px" id="expTitle"></h3>
+      <div class="exp-tab" id="exp-xlsx"></div>
+      <div class="exp-tab" id="exp-xml" hidden></div>
+      <div class="exp-tab" id="exp-travel" hidden></div>
+      <div class="exp-tab" id="exp-bank" hidden></div>
     </div>
   </section>
 </main>
@@ -278,7 +289,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 <script>
 const CATS = {
   bank:  {name:'銀行帳號', c:'--c-bank',  kw:['存摺','帳號','戶名','分行','銀行'],
-          fields:['銀行','分行','帳號','戶名']},
+          fields:['銀行','分行','金融機構代號','帳號','戶名']},
   inv:   {name:'發票',     c:'--c-inv',   kw:['電子發票證明聯','統一發票','發票號碼','賣方','買方'],
           fields:['發票號碼','日期','賣方統編','賣方名稱','金額']},
   rcpt:  {name:'收據',     c:'--c-rcpt',  kw:['收據','領據','收訖','茲收到','簽章'],
@@ -314,8 +325,8 @@ const DOCS = [
   text:['示範活動中心','<mark>收據</mark>','茲收到 '+ORG+' 場地租借費','新臺幣 伍仟元整','經手人：李OO','115.09.22'],
   v:{'日期':'115/09/22','開立人':'示範活動中心','事由':'場地租借費','金額':'5000'}},
  {f:'存摺封面_示範銀行.jpg', t:'jpg', cat:'bank', cands:{bank:.97},
-  text:['示範商業<mark>銀行</mark>','板橋<mark>分行</mark>','<mark>存摺</mark> PASSBOOK','<mark>帳號</mark> 0123-456-789012','<mark>戶名</mark> 陳大文'],
-  v:{'銀行':'示範商業銀行','分行':'板橋分行','帳號':'0123-456-789012','戶名':'陳大文'}},
+  text:['示範商業<mark>銀行</mark>','板橋<mark>分行</mark>','<mark>存摺</mark> PASSBOOK','分行代號 999-0001','<mark>帳號</mark> 0123-456-789012','<mark>戶名</mark> 王小明'],
+  v:{'銀行':'示範商業銀行','分行':'板橋分行','金融機構代號':'9990001','帳號':'0123-456-789012','戶名':'王小明'}},
  {f:'水費_115年9月.pdf', t:'pdf', cat:'water', cands:{water:.93,power:.18},
   text:['OO<mark>自來水</mark>事業處','<mark>水費</mark>繳費憑證','用戶：'+ORG,'<mark>水號</mark> 9-12-345678-9','計費期間 115/07/20–115/09/18','<mark>用水度數</mark> 38 度　應繳 486 元'],
   v:{'計費期間':'115/07/20–115/09/18','水號':'9-12-345678-9','用水度數':'38','金額':'486'}},
@@ -356,7 +367,7 @@ const STEPS = [
   {n:4, t:'欄位核對',  s:'依類別擷取欄位',  hint:'依類別切換表格，核對日期、金額等欄位。',
    act:[['只看缺欄位','missing'],['確認欄位','toExport',1]]},
   {n:5, t:'匯出 / 帶入', s:'Excel・XML・差旅',  hint:'依用途匯出，或把發票、收據帶到受款人 XML 流程。',
-   act:[['匯出分類 Excel','exp',1],['帶入受款人 XML','exp'],['產生差旅費明細','exp'],['匯出帳戶清冊','exp']]},
+   act:[['分類 Excel','tab:xlsx'],['受款人 XML','tab:xml'],['差旅費明細','tab:travel'],['帳戶清冊','tab:bank'],['下載','dl',1]]},
 ];
 
 let cur = 1, done = new Set(), filter = 'all', filter4 = 'inv', sel = 0, onlyMissing = false, loaded = false, ocrDone = false;
@@ -375,12 +386,13 @@ function renderStepper(){
     </button>`).join('');
   const s = STEPS[cur-1];
   $('#actions').innerHTML = `<span class="hint"><b>步驟 ${s.n}</b>　${s.hint}</span>` +
-    s.act.map(([l,a,p])=>`<button class="${p?'primary':''}" onclick="act('${a}')">${l}</button>`).join('') +
+    s.act.map(([l,a,p])=>a.startsWith('tab:') ? `<button class="tab ${a==='tab:'+expTab?'on':''}" onclick="setExpTab('${a.slice(4)}')">${l}</button>`
+      : `<button class="${p?'primary':''}" onclick="act('${a}')">${a==='dl'?'下載'+(expTab==='xml'?' XML':' Excel'):l}</button>`).join('') +
     (cur>1?`<button class="ghost" onclick="go(${cur-1})">← 上一步</button>`:'') +
     (cur<5?`<button class="ghost" onclick="next()">下一步 →</button>`:'');
   document.querySelectorAll('.stepbtn.cur')[0]?.scrollIntoView({inline:'nearest',block:'nearest'});
 }
-function go(n){cur=n; document.querySelectorAll('.step-view').forEach(v=>v.classList.toggle('on',+v.dataset.step===n)); renderStepper(); renderView(); window.scrollTo({top:0});}
+function go(n){if(n===5 && cur!==5) payees=null; cur=n; document.querySelectorAll('.step-view').forEach(v=>v.classList.toggle('on',+v.dataset.step===n)); renderStepper(); renderView(); window.scrollTo({top:0});}
 function next(){done.add(cur); go(cur+1);}
 function renderView(){
   if(cur===1) renderFiles();
@@ -405,7 +417,7 @@ function act(a){
   if(a==='confirmAll'){DOCS.forEach(d=>d.review=false); next(); return toast('分類已確認');}
   if(a==='missing'){onlyMissing=!onlyMissing; renderTable(); return toast(onlyMissing?'只顯示缺欄位的單據':'顯示全部');}
   if(a==='toExport') return next();
-  if(a==='exp') return toast('原型：匯出功能等 UI 確認後再接上');
+  if(a==='dl') return Promise.resolve().then(({xlsx:exportXlsx, xml:exportXml, travel:exportTravel, bank:exportBank})[expTab]).catch(e=>toast('匯出失敗：'+e.message));
 }
 
 /* 步驟 1 */
@@ -658,9 +670,267 @@ function renderTable(){
 }
 
 /* 步驟 5 */
+/* 步驟 5：匯出／帶入 */
+let expTab = 'xlsx';
+const EXP_TABS = {xlsx:'分類 Excel', xml:'受款人 XML', travel:'差旅費明細', bank:'帳戶清冊'};
+function setExpTab(t){ expTab = t; renderStepper(); renderSummary(); }
+
+const num = s => { const n = +String(s??'').replace(/[,，\s元]/g,''); return isFinite(n) ? n : 0; };
+const digits = s => String(s??'').replace(/\D/g,'');
+// 西元或民國日期 → 民國 7 碼（例 115/09/15、2026-09-15 → 1150915）
+function toRoc(s){
+  s = String(s ?? '').trim();
+  if(/^\d{7}$/.test(s)) return s;
+  let m = s.match(/((?:19|20)\d{2})\s*[\/\-.年]\s*(\d{1,2})\s*[\/\-.月]\s*(\d{1,2})/), y;
+  if(m) y = +m[1] - 1911;
+  else if((m = s.match(/(?:民國\s*)?(\d{2,3})\s*[\/\-.年]\s*(\d{1,2})\s*[\/\-.月]\s*(\d{1,2})/))) y = +m[1];
+  else return s;
+  return String(y).padStart(3,'0') + m[2].padStart(2,'0') + m[3].padStart(2,'0');
+}
+const rocShow = s => { const r = toRoc(s); return /^\d{7}$/.test(r) ? `${r.slice(0,3)}/${r.slice(3,5)}/${r.slice(5)}` : s; };
+const today = () => { const d = new Date(), p = n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}`; };
+
+function save(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+async function xlsxLib(){ if(!window.XLSX) await loadScript('lib/xlsx.full.min.js'); return window.XLSX; }
+// aoa：第一列是標題；數字欄存成數字，欄寬依內容自動估算
+function sheet(X, aoa){
+  const ws = X.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = aoa[0].map((_,c)=>({wch: Math.min(50, Math.max(...aoa.map(r=>[...String(r[c]??'')].reduce((w,ch)=>w+(ch.charCodeAt(0)>255?2:1),0)), 6) + 2)}));
+  return ws;
+}
+const safeSheetName = s => s.replace(/[\\\/?*\[\]:]/g,'').slice(0,31);
+
+/* ---- A. 分類 Excel ---- */
+function summaryRows(){
+  return DOCS.map(d=>[d.f, CATS[d.cat].name, rocShow(d.v['日期'] || d.v['計費期間'] || ''), d.v['金額']!==undefined && d.v['金額']!=='' ? num(d.v['金額']) : '', d.review ? '待確認' : '已確認']);
+}
+async function exportXlsx(){
+  const X = await xlsxLib(), wb = X.utils.book_new();
+  X.utils.book_append_sheet(wb, sheet(X, [['檔名','類別','日期／期間','金額','分類狀態'], ...summaryRows()]), '總表');
+  for(const k of Object.keys(CATS)){
+    const ds = DOCS.filter(d=>d.cat===k); if(!ds.length) continue;
+    const fs = CATS[k].fields;
+    X.utils.book_append_sheet(wb, sheet(X, [['檔名', ...fs], ...ds.map(d=>[d.f, ...fs.map(f=>f==='金額' && d.v[f]!=='' ? num(d.v[f]) : (d.v[f]??''))])]), safeSheetName(CATS[k].name));
+  }
+  const name = `單據分類_${today()}.xlsx`; X.writeFile(wb, name); toast('已下載 '+name);
+}
+
+/* ---- B. 受款人 XML（主計總處「付款憑單_匯入受款人、發票清單」格式，與 ocr.html 相同） ---- */
+const PAY_FIELDS = [
+  {k:'customeruniversalno', tag:'受款人編號', max:12},
+  {k:'customername',        tag:'受款人名稱', max:86},
+  {k:'guino',               tag:'營利事業統一編號', max:12},
+  {k:'bankaccount',         tag:'帳號', max:20},
+  {k:'bankaccountname',     tag:'戶名', max:120},
+  {k:'bankno',              tag:'金融機構編號', max:7},
+  {k:'bankname',            tag:'金融機構名稱', max:120},
+  {k:'address',             tag:'地址', max:100},
+  {k:'checkamt',            tag:'簽發國庫支票金額', num:true},
+  {k:'receipttype',         tag:'單據類別', max:1},
+  {k:'explain',             tag:'簽開支票原因', max:100},
+  {k:'remarktext',          tag:'支出用途', max:500, opt:true},
+];
+const INV_FIELDS = [
+  {k:'receiptno',           tag:'發票號碼', max:30},
+  {k:'receiptamt',          tag:'發票金額', num:true},
+  {k:'receiptdate',         tag:'發票日期', max:7},
+  {k:'Customeruniversalno', tag:'營利事業統一編號', max:12},
+  {k:'customername',        tag:'營業人名稱', max:100},
+  {k:'isallot',             tag:'分攤款', max:1},
+  {k:'overduereason',       tag:'發票日期與付款憑單日期相距超過15日原因', max:200},
+];
+const TAKE_METHODS = ['1.存入受款人帳戶','2.自領','3.郵寄','4.領回轉發','5.支用機關指定人員領取'];
+const RECEIPT_TYPES = [['0','0.其他'],['1','1.收據'],['2','2.發票']];
+const EXPLAINS = ['受款人要求','撥還零用金','員工薪津代扣款','特別費、歸墊款、暫付或預借款','郵資、禮券、共用事業費用','分攤款','稅捐及規費','出席費、審查費','取據或受領單據需核章','結匯'];
+const PAY_EDIT = [['customeruniversalno','受款人編號',110],['customername','受款人名稱',160],['guino','統一編號',96],['bankno','金融機構編號',96],['bankname','金融機構名稱',150],['bankaccount','帳號',140],['bankaccountname','戶名',110],['address','地址',150],['checkamt','金額',80],['receipttype','單據類別',90],['explain','簽開支票原因',150],['remarktext','支出用途',150]];
+let payees = null;
+const xcfg = {org:'', seq:'001', method:'1', explain:'受款人要求'};
+try{ Object.assign(xcfg, JSON.parse(localStorage.getItem('ocrXmlCfg')||'{}')); }catch(e){}
+const saveXcfg = () => { try{ localStorage.setItem('ocrXmlCfg', JSON.stringify(xcfg)); }catch(e){} };
+
+const blankPayee = () => Object.fromEntries([...PAY_FIELDS.map(f=>[f.k,'']), ['invoices',[]], ['src',[]]]);
+function buildPayees(){
+  const out = [];
+  // 發票：同一賣方統編合併成一位受款人，每張發票一筆 <發票明細>
+  for(const d of DOCS.filter(d=>d.cat==='inv')){
+    const v = d.v, key = v['賣方統編'] || v['賣方名稱'] || d.f;
+    let p = out.find(x=>x.receipttype==='2' && x._key===key);
+    if(!p){ p = Object.assign(blankPayee(), {_key:key, customeruniversalno:v['賣方統編']||'', customername:v['賣方名稱']||'', guino:v['賣方統編']||'', receipttype:'2'}); out.push(p); }
+    p.invoices.push({receiptno:String(v['發票號碼']||'').replace(/[-\s]/g,''), receiptamt:String(num(v['金額'])||''), receiptdate:toRoc(v['日期']),
+                     Customeruniversalno:v['賣方統編']||'', customername:v['賣方名稱']||'', isallot:'0', overduereason:''});
+    p.src.push(d.f);
+  }
+  out.forEach(p=>p.checkamt = String(p.invoices.reduce((s,i)=>s+num(i.receiptamt),0)));
+  // 收據：一張收據一位受款人
+  for(const d of DOCS.filter(d=>d.cat==='rcpt')){
+    out.push(Object.assign(blankPayee(), {customername:d.v['開立人']||'', checkamt:String(num(d.v['金額'])||''), receipttype:'1', remarktext:d.v['事由']||'', src:[d.f]}));
+  }
+  // 依戶名到「銀行帳號」類單據找帳戶，自動帶入
+  const banks = DOCS.filter(d=>d.cat==='bank');
+  for(const p of out){
+    const b = banks.find(b=>b.v['戶名'] && b.v['戶名']===p.customername);
+    if(b) Object.assign(p, {bankaccount:digits(b.v['帳號']), bankaccountname:b.v['戶名'], bankno:digits(b.v['金融機構代號']), bankname:(b.v['銀行']||'')+(b.v['分行']||''), _bank:b.f});
+  }
+  out.forEach(p=>{ if(!p.explain) p.explain = xcfg.explain; });
+  return out;
+}
+function validatePayees(){
+  const errs = [], warns = [], m = xcfg.method[0];
+  if(!xcfg.org.trim()) errs.push('請填機關代號（檔名＝機關代號＋流水號 3 碼）。');
+  if(!/^\d{3}$/.test(xcfg.seq)) errs.push('流水號須為 3 碼數字，例如 001。');
+  if(!payees.length) errs.push('沒有可帶入的發票或收據。');
+  payees.forEach((p,i)=>{
+    const who = `第 ${i+1} 位（${p.customername||'未填名稱'}）`, E = s=>errs.push(`${who}：${s}`), W = s=>warns.push(`${who}：${s}`);
+    if(!p.customername) E('受款人名稱不可空白');
+    if(!p.checkamt) E('金額不可空白'); else if(!/^-?\d+(\.\d+)?$/.test(p.checkamt)) E('金額須為數字'); else if(+p.checkamt===0) E('金額不可為 0');
+    if(!p.receipttype) E('單據類別不可空白');
+    if(m==='1'){
+      if(!p.bankno) E('金融機構編號不可空白（付款方式為存入帳戶）'); else if(p.bankno.length<7) E('金融機構編號至少 7 碼');
+      if(!p.bankname) E('金融機構名稱不可空白');
+      if(!p.bankaccount) E('帳號不可空白');
+      if(!p.bankaccountname) E('戶名不可空白');
+    } else {
+      if(!p.explain) E('簽開支票原因不可空白');
+      if(m==='3' && !p.address) E('付款方式為郵寄時，地址不可空白');
+    }
+    for(const f of PAY_FIELDS) if(f.max && String(p[f.k]).length>f.max) E(`${f.tag}超過 ${f.max} 字`);
+    if(p.guino && !/^\d{8}$/.test(p.guino)) W('統一編號通常為 8 碼數字');
+    if(p.receipttype==='2' && !p.invoices.length) E('單據類別是發票，卻沒有發票明細');
+    if(p.receipttype!=='2' && p.invoices.length) E('單據類別不是發票，卻有發票明細');
+    p.invoices.forEach((v,j)=>{
+      const iw = `${who} 發票 ${j+1}`;
+      if(!v.receiptno) errs.push(`${iw}：發票號碼不可空白`);
+      if(!/^\d{7}$/.test(v.receiptdate)) errs.push(`${iw}：發票日期須為民國 7 碼（例 1150915）`);
+      if(!v.receiptamt) errs.push(`${iw}：發票金額不可空白`);
+      if(!v.customername) errs.push(`${iw}：營業人名稱不可空白`);
+      if(!v.Customeruniversalno) warns.push(`${iw}：沒有賣方統一編號`);
+    });
+    if(p.invoices.length){ const s = p.invoices.reduce((a,v)=>a+num(v.receiptamt),0); if(s!==num(p.checkamt)) W(`發票金額合計 ${s} 與受款金額 ${p.checkamt} 不同`); }
+  });
+  return {errs, warns};
+}
+const xesc = s => String(s ?? '').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function buildPayeeXml(){
+  const T1='\t', T2='\t\t', T3='\t\t\t';
+  const out = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', '<主計總處 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'];
+  for(const p of payees){
+    out.push(`${T1}<付款資料>`);
+    for(const f of PAY_FIELDS){
+      const v = f.num ? String(p[f.k]).replace(/[,\s]/g,'') : p[f.k];
+      if(f.opt && !v) continue;              // 選填欄位空白時不輸出
+      out.push(`${T2}<${f.tag}>${xesc(v)}</${f.tag}>`);
+    }
+    for(const v of p.invoices){
+      out.push(`${T2}<發票明細>`);
+      for(const f of INV_FIELDS) out.push(`${T3}<${f.tag}>${xesc(v[f.k])}</${f.tag}>`);
+      out.push(`${T2}</發票明細>`);
+    }
+    out.push(`${T1}</付款資料>`);
+  }
+  out.push('</主計總處>', '');
+  return out.join('\r\n');
+}
+function exportXml(){
+  const {errs} = validatePayees();
+  if(errs.length){ renderXml(); return toast(`還有 ${errs.length} 個問題，請先修正（見紅色清單）`); }
+  const name = `${xcfg.org.trim()}${xcfg.seq}.XML`;
+  save(new Blob([buildPayeeXml()], {type:'application/xml'}), name);
+  toast(`已下載 ${name}（${payees.length} 位受款人）`);
+  xcfg.seq = String(+xcfg.seq+1).padStart(3,'0'); saveXcfg(); renderXml();
+}
+function setPay(i,k,val){ payees[i][k] = val.trim(); refreshXmlCheck(); }
+function setX(k,val){ xcfg[k] = val.trim(); saveXcfg(); if(k==='explain') payees.forEach(p=>{ if(!p.explain || EXPLAINS.includes(p.explain)) p.explain = xcfg.explain; }); k==='explain'?renderXml():refreshXmlCheck(); }
+function rebuildPayees(){ payees = buildPayees(); renderXml(); toast('已依目前的分類與欄位重新帶入'); }
+function refreshXmlCheck(){
+  const {errs, warns} = validatePayees();
+  $('#xmlCheck').innerHTML = errs.length||warns.length
+    ? `${errs.length?`<div class="chk err"><b>需修正 ${errs.length} 項</b><ul>${errs.map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:''}${warns.length?`<div class="chk warn"><b>請留意 ${warns.length} 項</b><ul>${warns.map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:''}`
+    : '<div class="chk ok"><b>檢核通過</b>，可以下載 XML。</div>';
+  $('#xmlPreview').value = buildPayeeXml();
+  $('#xmlName').textContent = `${xcfg.org.trim()||'機關代號'}${xcfg.seq}.XML`;
+}
+function renderXml(){
+  if(!payees) payees = buildPayees();
+  const opt = (arr,val) => arr.map(o=>{ const [v,l] = Array.isArray(o)?o:[o,o]; return `<option value="${esc(v)}"${v===val?' selected':''}>${esc(l)}</option>`; }).join('');
+  $('#exp-xml').innerHTML = `
+    <div class="xcfg">
+      <label>機關代號<input type="text" value="${esc(xcfg.org)}" placeholder="例：A123456" oninput="setX('org',this.value)"></label>
+      <label>流水號<input type="text" value="${esc(xcfg.seq)}" maxlength="3" style="width:64px" oninput="setX('seq',this.value)"></label>
+      <label>付款方式<select onchange="setX('method',this.value)">${opt(TAKE_METHODS.map(t=>[t[0],t]),xcfg.method)}</select></label>
+      <label>預設簽開支票原因<select onchange="setX('explain',this.value)">${opt(EXPLAINS,xcfg.explain)}</select></label>
+      <button class="ghost" onclick="rebuildPayees()">重新帶入</button>
+    </div>
+    <div class="small muted" style="margin:6px 0 10px">發票依賣方統編合併成一位受款人（每張發票一筆 &lt;發票明細&gt;）；收據一張一位受款人。戶名和「銀行帳號」類單據相同時，帳戶資料會自動帶入。表格可直接修改。</div>
+    <div class="tblwrap"><table class="t pay"><thead><tr><th>#</th>${PAY_EDIT.map(([,l])=>`<th>${l}</th>`).join('')}<th>來源單據</th></tr></thead><tbody>
+    ${payees.map((p,i)=>`<tr><td>${i+1}</td>${PAY_EDIT.map(([k,,w])=>`<td${k==='checkamt'?' class="num"':''}>${
+        k==='receipttype' ? `<select onchange="setPay(${i},'${k}',this.value)">${opt(RECEIPT_TYPES,p[k])}</select>`
+        : `<input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
+        <td class="small">${p.src.map(esc).join('<br>')}${p._bank?`<br><span class="muted">帳戶：${esc(p._bank)}</span>`:''}</td></tr>
+      ${p.invoices.length?`<tr class="invrow"><td></td><td colspan="${PAY_EDIT.length+1}" class="small">發票明細：${p.invoices.map(v=>`${esc(v.receiptno)}（${esc(v.receiptdate)}，${esc(v.receiptamt)} 元）`).join('、')}</td></tr>`:''}`).join('')}
+    </tbody></table></div>
+    <div id="xmlCheck" style="margin-top:12px"></div>
+    <details style="margin-top:10px"><summary class="small">XML 預覽：<b id="xmlName"></b></summary><textarea id="xmlPreview" readonly></textarea></details>`;
+  refreshXmlCheck();
+}
+
+/* ---- C. 差旅費明細 ---- */
+function travelRows(){
+  return DOCS.filter(d=>['hsr','rail','taxi'].includes(d.cat)).map(d=>{
+    const v = d.v, tool = d.cat==='hsr' ? '高鐵' : d.cat==='rail' ? (v['車種']||'火車') : '計程車';
+    const route = d.cat==='taxi' ? (v['起訖地點']||'') : [v['起站'],v['訖站']].filter(Boolean).join(' → ');
+    return {date:toRoc(v['日期']), tool, no: d.cat==='taxi' ? (v['車號']||'') : (v['車次']||''), route, amt:num(v['金額']), f:d.f};
+  }).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function renderTravel(){
+  const rows = travelRows(), total = rows.reduce((s,r)=>s+r.amt,0);
+  $('#exp-travel').innerHTML = rows.length ? `<div class="small muted" style="margin-bottom:8px">高鐵、火車、計程車依日期排序，可直接貼到「國內出差旅費報告表」的交通費欄。要修改請回步驟 4。</div>
+    <div class="tblwrap"><table class="t"><thead><tr><th>#</th><th>日期</th><th>交通工具</th><th>車次／車號</th><th>起訖地點</th><th>金額</th><th>單據</th></tr></thead><tbody>
+    ${rows.map((r,i)=>`<tr${!r.route||!r.amt?' class="warn"':''}><td>${i+1}</td><td>${rocShow(r.date)}</td><td>${esc(r.tool)}</td><td>${esc(r.no)}</td><td>${esc(r.route)||'<span class="muted">（未填）</span>'}</td><td style="text-align:right">${r.amt.toLocaleString()}</td><td class="small">${esc(r.f)}</td></tr>`).join('')}
+    </tbody><tfoot><tr><th colspan="5" style="text-align:right">交通費合計</th><th style="text-align:right">${total.toLocaleString()}</th><th></th></tr></tfoot></table></div>`
+    : '<div class="small muted">沒有高鐵、火車或計程車單據。</div>';
+}
+async function exportTravel(){
+  const rows = travelRows(); if(!rows.length) return toast('沒有交通費單據可以匯出');
+  const X = await xlsxLib(), wb = X.utils.book_new(), total = rows.reduce((s,r)=>s+r.amt,0);
+  X.utils.book_append_sheet(wb, sheet(X, [['日期','交通工具','車次／車號','起訖地點','金額','單據檔名'], ...rows.map(r=>[rocShow(r.date), r.tool, r.no, r.route, r.amt, r.f]), ['','','','合計', total, '']]), '交通費明細');
+  const name = `差旅費交通費明細_${today()}.xlsx`; X.writeFile(wb, name); toast('已下載 '+name);
+}
+
+/* ---- D. 帳戶清冊 ---- */
+const BANK_COLS = ['戶名','銀行','分行','金融機構代號','帳號'];
+function renderBankList(){
+  const rows = DOCS.filter(d=>d.cat==='bank');
+  $('#exp-bank').innerHTML = rows.length ? `<div class="small muted" style="margin-bottom:8px">從存摺封面整理出的帳戶，帶入受款人 XML 時會依戶名自動對應。要修改請回步驟 4。</div>
+    <div class="tblwrap"><table class="t"><thead><tr><th>#</th>${BANK_COLS.map(c=>`<th>${c}</th>`).join('')}<th>單據</th></tr></thead><tbody>
+    ${rows.map((d,i)=>`<tr${BANK_COLS.some(c=>!d.v[c])?' class="warn"':''}><td>${i+1}</td>${BANK_COLS.map(c=>`<td>${esc(d.v[c]||'')}</td>`).join('')}<td class="small">${esc(d.f)}</td></tr>`).join('')}
+    </tbody></table></div>` : '<div class="small muted">沒有「銀行帳號」類單據。</div>';
+}
+async function exportBank(){
+  const rows = DOCS.filter(d=>d.cat==='bank'); if(!rows.length) return toast('沒有帳戶資料可以匯出');
+  const X = await xlsxLib(), wb = X.utils.book_new();
+  // 帳號存成文字，避免開頭的 0 被 Excel 吃掉
+  const ws = sheet(X, [[...BANK_COLS,'單據檔名'], ...rows.map(d=>[...BANK_COLS.map(c=>d.v[c]||''), d.f])]);
+  X.utils.book_append_sheet(wb, ws, '帳戶清冊');
+  const name = `帳戶清冊_${today()}.xlsx`; X.writeFile(wb, name); toast('已下載 '+name);
+}
+
 function renderSummary(){
-  const by = {}; DOCS.forEach(d=>{(by[d.cat]=by[d.cat]||{n:0,a:0}); by[d.cat].n++; by[d.cat].a+=(+d.v['金額']||0);});
+  const by = {}; DOCS.forEach(d=>{(by[d.cat]=by[d.cat]||{n:0,a:0}); by[d.cat].n++; by[d.cat].a+=num(d.v['金額']);});
   $('#sumgrid').innerHTML = Object.keys(CATS).filter(k=>by[k]).map(k=>`<div class="sum" style="--c:${cv(k)}">${catTag(k)}<b>${by[k].n} 張</b><span class="small muted">${by[k].a?'合計 '+by[k].a.toLocaleString()+' 元':'—'}</span></div>`).join('');
+  document.querySelectorAll('.exp-tab').forEach(el=>el.hidden = el.id!=='exp-'+expTab);
+  $('#expTitle').textContent = EXP_TABS[expTab];
+  if(expTab==='xlsx'){
+    $('#exp-xlsx').innerHTML = `<div class="small muted" style="margin-bottom:8px">下載的 Excel 有「總表」和每一類各一個工作表（欄位同步驟 4）。以下是總表預覽：</div>
+      <div class="tblwrap"><table class="t"><thead><tr><th>檔名</th><th>類別</th><th>日期／期間</th><th>金額</th><th>分類狀態</th></tr></thead><tbody>
+      ${summaryRows().map(r=>`<tr${r[4]==='待確認'?' class="warn"':''}><td class="small">${esc(r[0])}</td><td>${r[1]}</td><td>${esc(r[2])}</td><td style="text-align:right">${r[3]===''?'':r[3].toLocaleString()}</td><td>${r[4]}</td></tr>`).join('')}
+      </tbody></table></div>`;
+  }
+  if(expTab==='xml') renderXml();
+  if(expTab==='travel') renderTravel();
+  if(expTab==='bank') renderBankList();
 }
 
 /* 主題 */
