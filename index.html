@@ -156,7 +156,13 @@ table.t tr.warn td{background:color-mix(in srgb,var(--warn) 10%,transparent)}
 .xcfg label{display:flex;flex-direction:column;font-size:13px;color:var(--muted)}
 .xcfg input,.xcfg select{color:var(--text)}
 table.t td select{font-size:13px;padding:2px 4px}
-table.t tr.invrow td{background:var(--soft)}
+table.t tr.invrow>td{background:var(--soft)}
+.invbox{padding:4px 0 6px}
+.invhead label{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.invhead label input{width:auto!important;min-width:0!important;margin:0}
+.invhead{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+table.t.inv{width:auto;background:var(--panel)}
+table.t.inv th{background:var(--panel)}
 table.pay td.small:last-child{white-space:nowrap}
 table.pay td.rowno{white-space:nowrap}
 table.pay td.rowno button{margin-left:6px}
@@ -378,6 +384,12 @@ const DOCS = [
  {f:'發票1_好好文具.png', t:'png', cat:'inv', cands:{inv:.96,rcpt:.22},
   text:['好好文具行','<mark>電子發票證明聯</mark>','115年09-10月','AB-12345678','2026-09-15 10:21:08','隨機碼 1234　總計 1,050','<mark>賣方</mark> 12345678　<mark>買方</mark> 87654321'],
   v:{'發票號碼':'AB-12345678','日期':'115/09/15','賣方統編':'12345678','賣方名稱':'好好文具行','金額':'1050'}},
+ {f:'發票3_好好文具.png', t:'png', cat:'inv', cands:{inv:.95,rcpt:.20},
+  text:['好好文具行','<mark>電子發票證明聯</mark>','115年09-10月','AB-12345690','2026-09-22 14:08:51','隨機碼 5678　總計 680','<mark>賣方</mark> 12345678　<mark>買方</mark> 87654321'],
+  v:{'發票號碼':'AB-12345690','日期':'115/09/22','賣方統編':'12345678','賣方名稱':'好好文具行','金額':'680'}},
+ {f:'發票4_好好文具.png', t:'png', cat:'inv', cands:{inv:.94,rcpt:.21},
+  text:['好好文具行','<mark>電子發票證明聯</mark>','115年09-10月','AB-12345702','2026-09-29 09:31:12','隨機碼 9012　總計 2,350','<mark>賣方</mark> 12345678　<mark>買方</mark> 87654321'],
+  v:{'發票號碼':'AB-12345702','日期':'115/09/29','賣方統編':'12345678','賣方名稱':'好好文具行','金額':'2350'}},
  {f:'發票2_天天印刷.png', t:'png', cat:'inv', cands:{inv:.94,rcpt:.30},
   text:['天天印刷有限公司','<mark>電子發票證明聯</mark>','115年09-10月','CD-23456789','2026-09-20 15:02:44','總計 2,100','<mark>賣方</mark> 23456789　<mark>買方</mark> 87654321'],
   v:{'發票號碼':'CD-23456789','日期':'115/09/20','賣方統編':'23456789','賣方名稱':'天天印刷有限公司','金額':'2100'}},
@@ -952,7 +964,50 @@ function exportXml(){
   toast(`已下載 ${name}（${payees.length} 位受款人）`);
   xcfg.seq = String(+xcfg.seq+1).padStart(3,'0'); saveXcfg(); renderXml();
 }
-function setPay(i,k,val){ payees[i][k] = val.trim(); refreshXmlCheck(); }
+function setPay(i,k,val){
+  payees[i][k] = val.trim(); if(k==='receipttype') return renderXml();
+  if(k==='checkamt'){ const is = document.getElementById('isum'+i); if(is) is.innerHTML = invSumText(payees[i]); }
+  refreshXmlCheck();
+}
+
+/* 發票明細子表：一位受款人可有多張發票，可新增、修改、刪除；簽發金額自動＝發票金額合計 */
+const INV_EDIT = [['receiptno','發票號碼',110],['receiptdate','發票日期（民國7碼）',96],['receiptamt','發票金額',80],['Customeruniversalno','營業人統編',90],['customername','營業人名稱',150],['isallot','分攤款',70],['overduereason','超過15日原因',150]];
+function invTable(p,i){
+  return `<div class="invbox"><div class="invhead"><b>發票明細 ${p.invoices.length} 張</b><span class="small muted" id="isum${i}">${invSumText(p)}</span>
+      <label class="small"><input type="checkbox" ${p._autoSum!==false?'checked':''} onchange="payees[${i}]._autoSum=this.checked;syncSum(${i});renderXml()"> 簽發金額自動＝發票合計</label>
+      <button class="mini" onclick="addInv(${i})">＋ 新增發票</button></div>
+    ${p.invoices.length?`<table class="t inv"><thead><tr><th>#</th>${INV_EDIT.map(([,l])=>`<th>${l}</th>`).join('')}<th></th></tr></thead><tbody>
+    ${p.invoices.map((v,j)=>`<tr><td>${j+1}</td>${INV_EDIT.map(([k,,w])=>`<td${k==='receiptamt'?' class="num"':''}>${k==='isallot'
+        ? `<select onchange="setInv(${i},${j},'${k}',this.value)"><option value="0"${v[k]==='0'?' selected':''}>0.否</option><option value="1"${v[k]==='1'?' selected':''}>1.是</option></select>`
+        : `<input style="min-width:${w}px" value="${esc(v[k])}" oninput="setInv(${i},${j},'${k}',this.value)">`}</td>`).join('')}
+      <td><button class="mini danger" onclick="delInv(${i},${j})">刪除</button></td></tr>`).join('')}
+    </tbody></table>`:'<div class="small muted">還沒有發票。單據類別是「發票」時至少要有 1 張。</div>'}</div>`;
+}
+function invSumText(p){
+  const sum = p.invoices.reduce((a,v)=>a+num(v.receiptamt),0);
+  return `合計 ${sum.toLocaleString()} 元${num(p.checkamt)===sum?'':`　<span style="color:var(--warn)">（與簽發金額 ${esc(p.checkamt)} 不同）</span>`}`;
+}
+function syncSum(i){ const p = payees[i]; if(p._autoSum!==false && p.invoices.length) p.checkamt = String(p.invoices.reduce((a,v)=>a+num(v.receiptamt),0)); }
+function setInv(i,j,k,val){
+  const v = payees[i].invoices[j]; v[k] = val.trim();
+  if(k==='receiptdate' && /[\/\-.年]/.test(v[k])) v[k] = toRoc(v[k]);
+  if(k==='receiptno') v[k] = v[k].replace(/[-\s]/g,'').toUpperCase();
+  syncSum(i);
+  const ca = document.getElementById('ca'+i); if(ca) ca.value = payees[i].checkamt;
+  const is = document.getElementById('isum'+i); if(is) is.innerHTML = invSumText(payees[i]);
+  refreshXmlCheck();
+}
+function addInv(i){
+  const p = payees[i];
+  p.invoices.push({receiptno:'', receiptamt:'', receiptdate:'', Customeruniversalno:p.guino||'', customername:p.customername||'', isallot:'0', overduereason:''});
+  if(!p.invoices.length || p.receipttype!=='2') p.receipttype = '2';
+  renderXml();
+}
+function delInv(i,j){
+  const v = payees[i].invoices[j];
+  if(!confirm(`確定要刪除發票 ${v.receiptno||'(未填號碼)'}？`)) return;
+  payees[i].invoices.splice(j,1); syncSum(i); renderXml();
+}
 function setX(k,val){ xcfg[k] = val.trim(); saveXcfg(); if(k==='explain') payees.forEach(p=>{ if(!p.explain || EXPLAINS.includes(p.explain)) p.explain = xcfg.explain; }); k==='explain'?renderXml():refreshXmlCheck(); }
 function deletePayee(i){
   const p = payees[i];
@@ -984,9 +1039,9 @@ function renderXml(){
     ${payees.map((p,i)=>`<tr><td class="rowno">${i+1}<button class="mini danger" title="刪除這位受款人" onclick="deletePayee(${i})">刪除</button></td>${PAY_EDIT.map(([k,,w])=>`<td${k==='checkamt'?' class="num"':''}>${
         k==='receipttype' ? `<select onchange="setPay(${i},'${k}',this.value)">${opt(RECEIPT_TYPES,p[k])}</select>`
         : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button></span>`
-        : `<input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
+        : `<input style="min-width:${w}px" value="${esc(p[k])}"${k==='checkamt'?` id="ca${i}"`:''} oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
         <td class="small">${p.src.map(esc).join('<br>')}${p._bank?`<br><span class="muted">帳戶：${esc(p._bank)}</span>`:''}</td></tr>
-      ${p.invoices.length?`<tr class="invrow"><td></td><td colspan="${PAY_EDIT.length+1}" class="small">發票明細：${p.invoices.map(v=>`${esc(v.receiptno)}（${esc(v.receiptdate)}，${esc(v.receiptamt)} 元）`).join('、')}</td></tr>`:''}`).join('')}
+      ${p.receipttype==='2'||p.invoices.length?`<tr class="invrow"><td></td><td colspan="${PAY_EDIT.length+1}">${invTable(p,i)}</td></tr>`:''}`).join('')}
     </tbody></table></div>
     <div id="xmlCheck" style="margin-top:12px"></div>
     <details style="margin-top:10px"><summary class="small">XML 預覽：<b id="xmlName"></b></summary><textarea id="xmlPreview" readonly></textarea></details>`;
