@@ -1,10 +1,10 @@
 # SBOM 軟體物料清單
 
-產生時間：2026-10-24T14:11:00+00:00　格式：CycloneDX 1.5（[sbom.cdx.json](sbom.cdx.json)）
+產生時間：2026-10-24T14:17:48+00:00　格式：CycloneDX 1.5（[sbom.cdx.json](sbom.cdx.json)）
 
 檢查目標：**不使用中國大陸來源的元件、模型、字型、CDN。**
 
-結果：✅ 通過 24 項、⚠️ 需注意 3 項、🗑️ 已移除 2 項（舊版已移除）。所有隨附的程式庫與模型都不是中國大陸來源；需注意的只有「字型」。
+結果：✅ 通過 25 項、⚠️ 需注意 3 項、🗑️ 已移除 2 項（舊版已移除）。所有隨附的程式庫與模型都不是中國大陸來源；需注意的只有「字型」。
 
 ## 需注意項目與替代方案
 
@@ -27,7 +27,8 @@
 | 8 | Google API Loader＋Google Picker | 線上最新版 | Google API 服務條款 | Google LLC | 美國 | apis.google.com（只有按「Google Drive」時才載入） | ✅ 通過 |
 | 9 | OneDrive File Picker SDK（OneDrive.js） | 7.2 | Microsoft API 使用條款 | Microsoft Corporation | 美國 | js.live.net（只有按「OneDrive」時才載入） | ✅ 通過 |
 | 10 | GitHub Pages（網站託管） | — | GitHub 服務條款 | GitHub, Inc.（Microsoft） | 美國 | chaifeng666.github.io | ✅ 通過 |
-| 11 | 離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command | — | 專案自有 | chaifeng666 | 臺灣 | repo offline/ | ✅ 通過 |
+| 11 | 政府電子採購網 拒絕往來廠商查詢（外部連結） | — | 政府網站 | 行政院公共工程委員會 | 臺灣 | web.pcc.gov.tw（只有按「查拒往」時開新分頁） | ✅ 通過 |
+| 12 | 離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command | — | 專案自有 | chaifeng666 | 臺灣 | repo offline/ | ✅ 通過 |
 
 ## ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）
 
@@ -57,6 +58,7 @@
 - **ocr-classify-ui index.html（自行開發）**：不含任何第三方程式碼
 - **Noto Sans TC（思源黑體繁中）**：Noto Sans CJK／思源黑體由 Adobe 與 Google 發行，但依公開資料，中文字形由合作字型廠「常州華文」（中國大陸）參與設計。離線版已不載入；網路版建議改用電腦內建字型（見下方替代方案）。
 - **PingFang TC（蘋方，系統字型，僅備援）**：依公開資料，蘋方由 Apple 與「常州華文」（中國大陸）合作設計。離線版已從字型清單移除；網路版建議一併移除。
+- **政府電子採購網 拒絕往來廠商查詢（外部連結）**：只開啟查詢頁並把統編複製到剪貼簿，本網頁不會傳送任何資料。
 - **離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command**：使用系統內建 Windows PowerShell（Microsoft）或 python3（PSF）
 - **tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）**：一般版與 SIMD 加速版各一
 - **Adobe CMap 字元對照表（pdfjs-dist/cmaps）**：檔名有 GB、UniGB 的是「簡體字編碼」的對照表，由 Adobe 製作，不是中國大陸來源的元件；只用來讀取用該編碼存的 PDF。

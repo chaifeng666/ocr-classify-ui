@@ -168,6 +168,9 @@ table.pay td.rowno{white-space:nowrap}
 table.pay td.rowno button{margin-left:6px}
 .pickcell{display:flex;gap:4px;align-items:center}
 button.mini{padding:2px 8px;font-size:12px}
+select.rvlm{font-size:12px!important;margin-top:4px;width:100%}
+select.rvlm.ok{border-color:var(--ok);color:var(--ok)}
+select.rvlm.bad{border-color:var(--err);background:var(--err);color:#fff}
 #acctDlg{max-width:860px}
 .cfggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 16px}
 .cfggrid label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
@@ -758,6 +761,7 @@ function renderDetail(){
     <div class="catpick">${Object.keys(CATS).map(k=>`<button style="--c:${cv(k)}" class="${d.cat===k?'on':''}" onclick="setCat(${d.id},'${k}')">${CATS[k].name}</button>`).join('')}</div>
     <div class="small" style="margin-top:12px;font-weight:600">擷取欄位（${CATS[d.cat].name}）</div>
     <div class="kv">${CATS[d.cat].fields.map(f=>`<label class="small muted">${f}</label><input type="text" value="${d.v[f]??''}" oninput="DOCS[${d.id}].v['${f}']=this.value" placeholder="未辨識">`).join('')}</div>
+    ${d.cat==='inv'?`<div style="margin-top:8px">${rvlmBtn(`DOCS[${d.id}].v['賣方統編']`)} <span class="small muted">到工程會政府電子採購網查詢賣方是否為拒絕往來廠商</span></div>`:''}
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button onclick="pick(${(sel-1+DOCS.length)%DOCS.length})">← 上一張</button>
       ${d.cat==='other'?`<button class="danger" onclick="deleteDocs([${d.id}])">刪除這張</button>`:''}
@@ -921,6 +925,8 @@ function validatePayees(){
     }
     for(const f of PAY_FIELDS) if(f.max && String(p[f.k]).length>f.max) E(`${f.tag}超過 ${f.max} 字`);
     if(p.guino && !/^\d{8}$/.test(p.guino)) W('統一編號通常為 8 碼數字');
+    if(p._rvlm==='bad') E('查詢結果為「拒絕往來廠商」，請確認是否仍可付款；確認可付款請改選查詢結果');
+    else if(p.receipttype==='2' && !p._rvlm) W('尚未查詢是否為拒絕往來廠商（按「查拒往」）');
     if(p.receipttype==='2' && !p.invoices.length) E('單據類別是發票，卻沒有發票明細');
     if(p.receipttype!=='2' && p.invoices.length) E('單據類別不是發票，卻有發票明細');
     p.invoices.forEach((v,j)=>{
@@ -979,9 +985,23 @@ function invTable(p,i){
     ${p.invoices.length?`<table class="t inv"><thead><tr><th>#</th>${INV_EDIT.map(([,l])=>`<th>${l}</th>`).join('')}<th></th></tr></thead><tbody>
     ${p.invoices.map((v,j)=>`<tr><td>${j+1}</td>${INV_EDIT.map(([k,,w])=>`<td${k==='receiptamt'?' class="num"':''}>${k==='isallot'
         ? `<select onchange="setInv(${i},${j},'${k}',this.value)"><option value="0"${v[k]==='0'?' selected':''}>0.否</option><option value="1"${v[k]==='1'?' selected':''}>1.是</option></select>`
+        : k==='Customeruniversalno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(v[k])}" oninput="setInv(${i},${j},'${k}',this.value)">${rvlmBtn(`payees[${i}].invoices[${j}].Customeruniversalno`)}</span>`
         : `<input style="min-width:${w}px" value="${esc(v[k])}" oninput="setInv(${i},${j},'${k}',this.value)">`}</td>`).join('')}
       <td><button class="mini danger" onclick="delInv(${i},${j})">刪除</button></td></tr>`).join('')}
     </tbody></table>`:'<div class="small muted">還沒有發票。單據類別是「發票」時至少要有 1 張。</div>'}</div>`;
+}
+/* 拒絕往來廠商查詢（行政院公共工程委員會 政府電子採購網）
+ * 該網站的查詢需要表單驗證，不能用網址直接帶入統編；所以按鈕會把統編複製到剪貼簿，再開新分頁到查詢頁，
+ * 由使用者貼上查詢。統編只複製在這台電腦，不會由本網頁傳送出去。 */
+const RVLM_URL = 'https://web.pcc.gov.tw/vms/rvlm/rvlmPublicSearch/indexSearchRvlmPublic';
+const RVLM_OPTS = [['','未查詢拒往'],['ok','非拒絕往來'],['bad','是拒絕往來！']];
+const rvlmBtn = expr => `<button class="mini" title="到工程會查詢是否為拒絕往來廠商（統編會先複製）" onclick="rvlmCheck(${expr})">查拒往</button>`;
+async function rvlmCheck(uni){
+  uni = String(uni||'').trim();
+  window.open(RVLM_URL, '_blank', 'noopener');
+  if(!uni) return toast('沒有統一編號，已開啟查詢頁，請用廠商名稱查詢');
+  try{ await navigator.clipboard.writeText(uni); toast(`統編 ${uni} 已複製，請在查詢頁的「廠商代碼」欄貼上（Ctrl+V）`); }
+  catch(e){ toast(`請在查詢頁輸入統編 ${uni}`); }
 }
 function invSumText(p){
   const sum = p.invoices.reduce((a,v)=>a+num(v.receiptamt),0);
@@ -1038,6 +1058,8 @@ function renderXml(){
     <div class="tblwrap"><table class="t pay"><thead><tr><th>#</th>${PAY_EDIT.map(([,l])=>`<th>${l}</th>`).join('')}<th>來源單據</th></tr></thead><tbody>
     ${payees.map((p,i)=>`<tr><td class="rowno">${i+1}<button class="mini danger" title="刪除這位受款人" onclick="deletePayee(${i})">刪除</button></td>${PAY_EDIT.map(([k,,w])=>`<td${k==='checkamt'?' class="num"':''}>${
         k==='receipttype' ? `<select onchange="setPay(${i},'${k}',this.value)">${opt(RECEIPT_TYPES,p[k])}</select>`
+        : k==='guino' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)">${rvlmBtn(`payees[${i}].guino`)}</span>
+            <select class="rvlm ${p._rvlm||''}" title="拒絕往來廠商查詢結果" onchange="payees[${i}]._rvlm=this.value;this.className='rvlm '+this.value;refreshXmlCheck()">${RVLM_OPTS.map(([v,l])=>`<option value="${v}"${(p._rvlm||'')===v?' selected':''}>${l}</option>`).join('')}</select>`
         : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button></span>`
         : `<input style="min-width:${w}px" value="${esc(p[k])}"${k==='checkamt'?` id="ca${i}"`:''} oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
         <td class="small">${p.src.map(esc).join('<br>')}${p._bank?`<br><span class="muted">帳戶：${esc(p._bank)}</span>`:''}</td></tr>

@@ -58,6 +58,8 @@ add(A, 'OneDrive File Picker SDK（OneDrive.js）', '7.2', 'service', 'Microsoft
     'js.live.net（只有按「OneDrive」時才載入）', 'OneDrive 選檔', OK)
 add(A, 'GitHub Pages（網站託管）', '—', 'service', 'GitHub 服務條款', 'GitHub, Inc.（Microsoft）', '美國',
     'chaifeng666.github.io', '網路版網站託管（離線版不需要）', OK)
+add(A, '政府電子採購網 拒絕往來廠商查詢（外部連結）', '—', 'service', '政府網站', '行政院公共工程委員會', '臺灣',
+    'web.pcc.gov.tw（只有按「查拒往」時開新分頁）', '查詢賣方是否為拒絕往來廠商', OK, '只開啟查詢頁並把統編複製到剪貼簿，本網頁不會傳送任何資料。')
 add(A, '離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command', '—', 'application', '專案自有', 'chaifeng666', '臺灣',
     'repo offline/', '離線版本機伺服器（只接受 localhost）', OK, '使用系統內建 Windows PowerShell（Microsoft）或 python3（PSF）')
 
