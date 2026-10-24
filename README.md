@@ -15,7 +15,13 @@ OCR 辨識後，先把會計單據分類（銀行帳號、發票、收據、水�
 | 4 欄位核對 | 🔧 部分 | 依類別的欄位表格；欄位擷取開發中 |
 | 5 匯出／帶入 | ✅ 完成 | 分類 Excel、匯出GBA受款XML（一位受款人多張發票、從帳戶清冊選帳號、刪除受款人、檢核）、差旅費明細、帳戶清冊 |
 
+## 離線版
+
+不用連網路的版本：執行 `tools/build-offline.sh` 產生 `dist/OCR-classify-offline.zip`（Windows 雙擊 `start-windows.bat` 開啟）。離線版不載入任何外部網址，字型改用電腦內建字型。
+
 ## 說明文件
+
+- 軟體物料清單（SBOM，確認沒有中國大陸來源元件）：[sbom/SBOM.md](sbom/SBOM.md)、[CycloneDX JSON](sbom/sbom.cdx.json)、[Excel](sbom/SBOM.xlsx)
 
 - Google Drive／OneDrive 金鑰申請：[SETUP.md](SETUP.md)
 - Excel 匯出使用 [SheetJS](https://sheetjs.com/)（Apache 2.0，放在 `lib/`）。

@@ -1,0 +1,1221 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3c7ca5f7-1d52-4dc1-b7e8-9ef6bc163056",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-24T14:11:00+00:00",
+    "component": {
+      "type": "application",
+      "name": "OCR 輸入資料辨識（ocr-classify-ui＋ocr-app）",
+      "bom-ref": "root"
+    },
+    "properties": [
+      {
+        "name": "policy",
+        "value": "不使用中國大陸來源的元件、模型、字型、CDN"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "c1",
+      "type": "application",
+      "name": "ocr-classify-ui index.html（自行開發）",
+      "version": "main",
+      "supplier": {
+        "name": "chaifeng666"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "專案自有"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "臺灣"
+        },
+        {
+          "name": "取得方式",
+          "value": "GitHub repo chaifeng666/ocr-classify-ui"
+        },
+        {
+          "name": "用途",
+          "value": "主程式（原生 JavaScript，無框架）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "不含任何第三方程式碼"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "83108ac72bc8e844c4e22ae623e6168fc84b898f8597613dac745f1925fa98c7"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c2",
+      "type": "library",
+      "name": "SheetJS（xlsx）",
+      "version": "0.18.5",
+      "supplier": {
+        "name": "SheetJS LLC"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → 放在 repo lib/（自行託管，不走 CDN）"
+        },
+        {
+          "name": "用途",
+          "value": "匯出 Excel"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/xlsx@0.18.5",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c9506197caf809a075b6dee1da0d36fb19da7158ffe8a88e7b0c96c5d8623c99"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c3",
+      "type": "file",
+      "name": "Noto Sans TC（思源黑體繁中）",
+      "version": "Google Fonts 目前版",
+      "supplier": {
+        "name": "Google LLC／Adobe Inc."
+      },
+      "licenses": [
+        {
+          "expression": "OFL-1.1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國（發行者）"
+        },
+        {
+          "name": "取得方式",
+          "value": "fonts.googleapis.com / fonts.gstatic.com（只有網路版載入）"
+        },
+        {
+          "name": "用途",
+          "value": "畫面字型"
+        },
+        {
+          "name": "檢查結論",
+          "value": "⚠️ 需注意"
+        },
+        {
+          "name": "說明",
+          "value": "Noto Sans CJK／思源黑體由 Adobe 與 Google 發行，但依公開資料，中文字形由合作字型廠「常州華文」（中國大陸）參與設計。離線版已不載入；網路版建議改用電腦內建字型（見下方替代方案）。"
+        }
+      ],
+      "purl": "pkg:generic/google-fonts/noto-sans-tc"
+    },
+    {
+      "bom-ref": "c4",
+      "type": "file",
+      "name": "PingFang TC（蘋方，系統字型，僅備援）",
+      "version": "macOS／iOS 內建",
+      "supplier": {
+        "name": "Apple Inc."
+      },
+      "licenses": [
+        {
+          "expression": "Apple 系統授權"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國（發行者）"
+        },
+        {
+          "name": "取得方式",
+          "value": "不隨附、不下載；只在 Apple 裝置上當備援字型"
+        },
+        {
+          "name": "用途",
+          "value": "畫面字型備援"
+        },
+        {
+          "name": "檢查結論",
+          "value": "⚠️ 需注意"
+        },
+        {
+          "name": "說明",
+          "value": "依公開資料，蘋方由 Apple 與「常州華文」（中國大陸）合作設計。離線版已從字型清單移除；網路版建議一併移除。"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c5",
+      "type": "file",
+      "name": "Microsoft JhengHei（微軟正黑體，系統字型）",
+      "version": "Windows 內建",
+      "supplier": {
+        "name": "Microsoft Corporation"
+      },
+      "licenses": [
+        {
+          "expression": "Windows 系統授權"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "不隨附、不下載"
+        },
+        {
+          "name": "用途",
+          "value": "畫面字型（Windows）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c6",
+      "type": "file",
+      "name": "LiHei Pro（儷黑 Pro，系統字型，僅離線版）",
+      "version": "macOS 內建",
+      "supplier": {
+        "name": "華康科技 DynaComware（Apple 隨附）"
+      },
+      "licenses": [
+        {
+          "expression": "Apple 系統授權"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "臺灣"
+        },
+        {
+          "name": "取得方式",
+          "value": "不隨附、不下載"
+        },
+        {
+          "name": "用途",
+          "value": "畫面字型（Mac 備援）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c7",
+      "type": "platform",
+      "name": "Google Identity Services（gsi/client）",
+      "version": "線上最新版",
+      "supplier": {
+        "name": "Google LLC"
+      },
+      "licenses": [
+        {
+          "expression": "Google API 服務條款"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "accounts.google.com（只有按「Google Drive」時才載入）"
+        },
+        {
+          "name": "用途",
+          "value": "Google 帳號登入（drive.file 權限）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c8",
+      "type": "platform",
+      "name": "Google API Loader＋Google Picker",
+      "version": "線上最新版",
+      "supplier": {
+        "name": "Google LLC"
+      },
+      "licenses": [
+        {
+          "expression": "Google API 服務條款"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "apis.google.com（只有按「Google Drive」時才載入）"
+        },
+        {
+          "name": "用途",
+          "value": "Google Drive 選檔"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c9",
+      "type": "platform",
+      "name": "OneDrive File Picker SDK（OneDrive.js）",
+      "version": "7.2",
+      "supplier": {
+        "name": "Microsoft Corporation"
+      },
+      "licenses": [
+        {
+          "expression": "Microsoft API 使用條款"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "js.live.net（只有按「OneDrive」時才載入）"
+        },
+        {
+          "name": "用途",
+          "value": "OneDrive 選檔"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c10",
+      "type": "platform",
+      "name": "GitHub Pages（網站託管）",
+      "version": "—",
+      "supplier": {
+        "name": "GitHub, Inc.（Microsoft）"
+      },
+      "licenses": [
+        {
+          "expression": "GitHub 服務條款"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "chaifeng666.github.io"
+        },
+        {
+          "name": "用途",
+          "value": "網路版網站託管（離線版不需要）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c11",
+      "type": "application",
+      "name": "離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command",
+      "version": "—",
+      "supplier": {
+        "name": "chaifeng666"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "專案自有"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "臺灣"
+        },
+        {
+          "name": "取得方式",
+          "value": "repo offline/"
+        },
+        {
+          "name": "用途",
+          "value": "離線版本機伺服器（只接受 localhost）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "使用系統內建 Windows PowerShell（Microsoft）或 python3（PSF）"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c12",
+      "type": "application",
+      "name": "ocr.html（自行開發）",
+      "version": "2026-10-24",
+      "supplier": {
+        "name": "chaifeng666"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "專案自有"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "臺灣"
+        },
+        {
+          "name": "取得方式",
+          "value": "/mnt/project-files/ocr-app/"
+        },
+        {
+          "name": "用途",
+          "value": "主程式"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e8525a839fb0f594135a6000fb34b1a093b898cd379cd5349fe2d6b99439aacd"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c13",
+      "type": "library",
+      "name": "tesseract.js",
+      "version": "5.1.1",
+      "supplier": {
+        "name": "Project Naptha（Kevin Kwok 等）"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → OCR-offline.zip lib/；線上版從 jsDelivr 下載"
+        },
+        {
+          "name": "用途",
+          "value": "OCR 主程式（瀏覽器端）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/tesseract.js@5.1.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a8e29918d098b2b06e1012bdaeffb4aec0445c5d5654709023e0bd1f442a80e8"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c14",
+      "type": "library",
+      "name": "tesseract.js worker",
+      "version": "5.1.1",
+      "supplier": {
+        "name": "Project Naptha"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "同上"
+        },
+        {
+          "name": "用途",
+          "value": "OCR 背景執行緒"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/tesseract.js@5.1.1#worker",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aca1229639fc9907d86f96e825955a2b7c5716d17f3bc3acd71f9c7ab66181fc"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c15",
+      "type": "library",
+      "name": "tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）",
+      "version": "5.1.1",
+      "supplier": {
+        "name": "Tesseract：HP → Google，開源社群維護；Leptonica：Dan Bloomberg"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0（Tesseract）／BSD-2-Clause（Leptonica）"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "同上"
+        },
+        {
+          "name": "用途",
+          "value": "OCR 引擎"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "一般版與 SIMD 加速版各一"
+        }
+      ],
+      "purl": "pkg:npm/tesseract.js-core@5.1.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ce20eda9533cbed1e6c2b4276fbae1e0adc61b6754b5513084be601787b457cf"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c16",
+      "type": "data",
+      "name": "Tesseract 語言資料 chi_tra（繁體中文）",
+      "version": "4.0.0 best_int",
+      "supplier": {
+        "name": "Google LLC（tessdata）"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "tesseract.js 官方語言資料 → lib/lang/"
+        },
+        {
+          "name": "用途",
+          "value": "繁體中文辨識模型"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:generic/tessdata/chi_tra@4.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "11fe2610dab05d8a880d02f193ce70203f4c4bbe061b987d5529a2c038a22743"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c17",
+      "type": "data",
+      "name": "Tesseract 語言資料 eng（英文）",
+      "version": "4.0.0 best_int",
+      "supplier": {
+        "name": "Google LLC（tessdata）"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "同上"
+        },
+        {
+          "name": "用途",
+          "value": "英文辨識模型"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:generic/tessdata/eng@4.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "45b4cb346724ac1774f1c36f42f182b887bcdb28ebe63e6fff90ac41f3fcff91"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c18",
+      "type": "library",
+      "name": "PDF.js（pdfjs-dist）",
+      "version": "3.11.174",
+      "supplier": {
+        "name": "Mozilla Foundation"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → lib/"
+        },
+        {
+          "name": "用途",
+          "value": "讀取 PDF、轉成影像"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/pdfjs-dist@3.11.174",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5b5799e6f8c680663207ac5b42ee14eed2a406fa7af48f50c154f0c0b1566946"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c19",
+      "type": "library",
+      "name": "PDF.js worker",
+      "version": "3.11.174",
+      "supplier": {
+        "name": "Mozilla Foundation"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "同上"
+        },
+        {
+          "name": "用途",
+          "value": "PDF 背景解析"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/pdfjs-dist@3.11.174#worker",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "feabdf309770ed24bba31a5467836cdc8cf639c705af27d52b585b041bb8527b"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c20",
+      "type": "data",
+      "name": "Adobe CMap 字元對照表（pdfjs-dist/cmaps）",
+      "version": "3.11.174 隨附",
+      "supplier": {
+        "name": "Adobe Inc."
+      },
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "同上 → lib/cmaps/"
+        },
+        {
+          "name": "用途",
+          "value": "正確讀出 PDF 內的中日韓文字"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "檔名有 GB、UniGB 的是「簡體字編碼」的對照表，由 Adobe 製作，不是中國大陸來源的元件；只用來讀取用該編碼存的 PDF。"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c21",
+      "type": "library",
+      "name": "SheetJS（xlsx）",
+      "version": "0.18.5",
+      "supplier": {
+        "name": "SheetJS LLC"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → lib/"
+        },
+        {
+          "name": "用途",
+          "value": "讀寫 Excel"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/xlsx@0.18.5",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c9506197caf809a075b6dee1da0d36fb19da7158ffe8a88e7b0c96c5d8623c99"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c22",
+      "type": "library",
+      "name": "mammoth",
+      "version": "1.8.0",
+      "supplier": {
+        "name": "Michael Williamson"
+      },
+      "licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "英國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → lib/"
+        },
+        {
+          "name": "用途",
+          "value": "讀取 Word（.docx）文字"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/mammoth@1.8.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "deb07bf230d1cb3e190bc5adc6743f35c6531b6571d1e5469b24f452a7f0f4ab"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c23",
+      "type": "library",
+      "name": "JSZip",
+      "version": "3.10.1",
+      "supplier": {
+        "name": "Stuart Knightley"
+      },
+      "licenses": [
+        {
+          "expression": "MIT OR GPL-3.0-or-later"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "英國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → lib/"
+        },
+        {
+          "name": "用途",
+          "value": "讀取 PPT、Word 壓縮內容"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "purl": "pkg:npm/jszip@3.10.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c24",
+      "type": "data",
+      "name": "手寫數字辨識模型 DIGIT_NET（自行訓練）",
+      "version": "2026-10-13",
+      "supplier": {
+        "name": "chaifeng666；訓練資料 MNIST（LeCun、Cortes、Burges，源自美國 NIST）"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "專案自有（訓練資料 CC BY-SA 3.0）"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "臺灣（模型）／美國（資料）"
+        },
+        {
+          "name": "取得方式",
+          "value": "內嵌於 ocr.html"
+        },
+        {
+          "name": "用途",
+          "value": "領據的身分證、電話等數字欄"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "int8 權重直接寫在 ocr.html 裡，不需下載"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c25",
+      "type": "platform",
+      "name": "jsDelivr CDN",
+      "version": "—",
+      "supplier": {
+        "name": "jsDelivr（Prospect One，波蘭）；節點由 Cloudflare、Fastly（美國）提供"
+      },
+      "licenses": [
+        {
+          "expression": "jsDelivr 服務條款"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "波蘭／美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "cdn.jsdelivr.net（只有線上載入模式；OCR-offline.zip 不使用）"
+        },
+        {
+          "name": "用途",
+          "value": "下載程式庫與語言資料（只下載，不上傳）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "網頁的安全限制（CSP）只允許連到 jsDelivr 與本機。"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c26",
+      "type": "file",
+      "name": "系統字型：Microsoft JhengHei／PingFang TC／Noto Sans TC",
+      "version": "系統內建",
+      "supplier": {
+        "name": "Microsoft／Apple／Google"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "系統授權"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國（發行者）"
+        },
+        {
+          "name": "取得方式",
+          "value": "不隨附、不下載（只寫在字型清單裡）"
+        },
+        {
+          "name": "用途",
+          "value": "畫面字型"
+        },
+        {
+          "name": "檢查結論",
+          "value": "⚠️ 需注意"
+        },
+        {
+          "name": "說明",
+          "value": "PingFang TC 與 Noto Sans TC 依公開資料由「常州華文」（中國大陸）參與中文字形設計；建議從字型清單移除，只留微軟正黑體。"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c27",
+      "type": "application",
+      "name": "離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command",
+      "version": "—",
+      "supplier": {
+        "name": "chaifeng666"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "專案自有"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "臺灣"
+        },
+        {
+          "name": "取得方式",
+          "value": "OCR-offline.zip"
+        },
+        {
+          "name": "用途",
+          "value": "本機伺服器（只接受 localhost）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aad96a5f3c721d5f2cef0538091841842d6ae1bc48c8d6089707cb040ba2a6de"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c28",
+      "type": "library",
+      "name": "PaddleOCR PP-OCRv5",
+      "version": "—",
+      "supplier": {
+        "name": "百度（Baidu）"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "中國大陸"
+        },
+        {
+          "name": "取得方式",
+          "value": "已於 2026-10-13 移除"
+        },
+        {
+          "name": "用途",
+          "value": "（舊版 OCR 引擎）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "🗑️ 已移除"
+        },
+        {
+          "name": "說明",
+          "value": "依使用者規定移除，改用 Tesseract（Google）。目前程式中已無任何引用。"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c29",
+      "type": "library",
+      "name": "OpenCC",
+      "version": "—",
+      "supplier": {
+        "name": "BYVoid"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）"
+        },
+        {
+          "name": "來源國",
+          "value": "中國大陸"
+        },
+        {
+          "name": "取得方式",
+          "value": "已於 2026-10-13 移除"
+        },
+        {
+          "name": "用途",
+          "value": "（舊版簡繁轉換）"
+        },
+        {
+          "name": "檢查結論",
+          "value": "🗑️ 已移除"
+        },
+        {
+          "name": "說明",
+          "value": "依使用者規定移除。目前程式中已無任何引用。"
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
