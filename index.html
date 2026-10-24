@@ -161,6 +161,16 @@ table.pay td.small:last-child{white-space:nowrap}
 .pickcell{display:flex;gap:4px;align-items:center}
 button.mini{padding:2px 8px;font-size:12px}
 #acctDlg{max-width:860px}
+.cfggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 16px}
+.cfggrid label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
+.cfggrid select,.cfggrid input{color:var(--text)}
+.cfggrid small{font-size:12px}
+fieldset.cfg label.chk1 input{width:auto;margin:0;flex:none}
+label.chk1{justify-content:flex-start;flex-direction:row!important;align-items:center;gap:6px!important;color:var(--text)!important;font-size:14px!important}
+.doc .del{margin-left:6px;border:1px solid var(--err);color:var(--err);background:transparent;padding:0 7px;font-size:11px;border-radius:999px}
+.doc .del:hover{background:var(--err);color:#fff}
+button.danger{border-color:var(--err);color:var(--err)}
+button.danger:hover{background:var(--err);color:#fff}
 #acctDlg table.t tr.same td{background:color-mix(in srgb,var(--ok) 12%,transparent)}
 #acctDlg table.t tbody tr{cursor:pointer}
 #acctDlg table.t tbody tr:hover td{background:var(--soft)}
@@ -223,7 +233,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <!-- 2 OCR -->
   <section class="step-view" data-step="2">
     <div class="panel">
-      <div class="small muted" style="margin-bottom:8px">辨識語言：中文繁體＋英文。完成後會自動依關鍵字與版面特徵初步分類。</div>
+      <div class="small muted" style="margin-bottom:8px" id="ocrCfgLine"></div>
       <div id="ocrlist"></div>
     </div>
   </section>
@@ -288,6 +298,38 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     <button onclick="clearCloud()">清除設定</button>
     <button onclick="cloudDlg.close()">取消</button>
     <button class="primary" onclick="saveCloud()">儲存</button>
+  </div>
+</dialog>
+<dialog id="ocrDlg">
+  <h3 style="margin:0 0 4px">辨識設定</h3>
+  <div class="small muted" style="margin-bottom:10px">設定會記在這台電腦的瀏覽器裡，下次打開還在。</div>
+  <div class="cfggrid">
+    <label>辨識語言<select id="oc_lang">
+      <option value="chi_tra+eng">中文繁體＋英文（建議）</option><option value="chi_tra">只有中文繁體</option><option value="eng">只有英文／數字</option></select>
+      <small>中英混合的單據請用預設；純英文收據選「只有英文」會比較快、比較準。</small></label>
+    <label>版面模式<select id="oc_psm">
+      <option value="3">自動判斷版面（建議）</option><option value="4">單欄文字（收據、車票）</option><option value="6">一整塊文字</option><option value="11">零散文字（存摺封面、票根）</option></select>
+      <small>辨識結果順序亂掉時，改成「單欄文字」通常會改善。</small></label>
+    <label>PDF 解析度<select id="oc_dpi">
+      <option value="150">150 DPI（快）</option><option value="200">200 DPI（建議）</option><option value="300">300 DPI（小字較準、較慢）</option></select></label>
+    <label>PDF 頁數<select id="oc_pages">
+      <option value="all">全部頁面，每頁當一張單據</option><option value="first">只辨識第 1 頁</option></select></label>
+    <label>同時辨識幾個檔案<select id="oc_workers">
+      <option value="1">1（電腦較舊時）</option><option value="2">2（建議）</option><option value="4">4（電腦較新時）</option></select></label>
+    <label>「待確認」門檻：分類可能性低於 <b id="oc_thv"></b>
+      <input type="range" id="oc_th" min="40" max="95" step="5" oninput="$('#oc_thv').textContent=this.value+'%'">
+      <small>低於這個比例的單據會標成「待確認」，要人工看過。</small></label>
+  </div>
+  <fieldset class="cfg" style="margin-top:10px"><legend>影像前處理</legend>
+    <label class="chk1"><input type="checkbox" id="oc_gray"> 轉成灰階</label>
+    <label class="chk1"><input type="checkbox" id="oc_bin"> 黑白二值化（底色雜、印章多時開啟）</label>
+    <label class="chk1"><input type="checkbox" id="oc_rotate"> 自動轉正（拍歪、橫拍的照片）</label>
+    <label class="chk1"><input type="checkbox" id="oc_upscale"> 小圖自動放大（寬度小於 1000 像素時放大 2 倍）</label>
+  </fieldset>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap">
+    <button onclick="resetOcrCfg()">恢復預設</button>
+    <button onclick="ocrDlg.close()">取消</button>
+    <button class="primary" onclick="saveOcrCfg()">儲存</button>
   </div>
 </dialog>
 <dialog id="acctDlg">
@@ -388,7 +430,7 @@ const STEPS = [
   {n:2, t:'OCR 辨識',  s:'中文繁體＋英文',  hint:'在本機瀏覽器辨識文字，完成後自動初步分類。',
    act:[['開始辨識','ocr',1],['辨識設定','setting']]},
   {n:3, t:'單據分類',  s:'自動分類＋人工確認', hint:'點選單據看原圖與分類理由；勾選多張可一次改分類。',
-   act:[['全選待確認','selReview'],['批次改分類','batch'],['分類規則','rules'],['全部確認','confirmAll',1]]},
+   act:[['全選待確認','selReview'],['批次改分類','batch'],['分類規則','rules'],['刪除未分類','delOther'],['全部確認','confirmAll',1]]},
   {n:4, t:'欄位核對',  s:'依類別擷取欄位',  hint:'依類別切換表格，核對日期、金額等欄位。',
    act:[['只看缺欄位','missing'],['確認欄位','toExport',1]]},
   {n:5, t:'匯出 / 帶入', s:'Excel・XML・差旅',  hint:'依用途匯出，或把發票、收據帶到受款人 XML 流程。',
@@ -435,11 +477,12 @@ function act(a){
   if(a==='cloudcfg') return openCloud();
   if(a==='demo') return loadDemo();
   if(a==='ocr') return runOcr();
-  if(a==='setting') return toast('原型：辨識設定尚未接上');
+  if(a==='setting') return openOcrCfg();
+  if(a==='delOther') return deleteDocs(DOCS.filter(d=>d.cat==='other').map(d=>d.id));
   if(a==='rules'){renderRules(); return $('#rulesDlg').showModal();}
   if(a==='selReview'){DOCS.forEach(d=>d.checked=!!d.review); renderGrid(); return toast('已勾選 '+DOCS.filter(d=>d.review).length+' 張待確認單據');}
   if(a==='batch') return batch();
-  if(a==='confirmAll'){DOCS.forEach(d=>d.review=false); next(); return toast('分類已確認');}
+  if(a==='confirmAll'){DOCS.forEach(d=>{d.review=false;d.confirmed=true;}); next(); return toast('分類已確認');}
   if(a==='missing'){onlyMissing=!onlyMissing; renderTable(); return toast(onlyMissing?'只顯示缺欄位的單據':'顯示全部');}
   if(a==='toExport') return next();
   if(a==='dl') return Promise.resolve().then(({xlsx:exportXlsx, xml:exportXml, travel:exportTravel, bank:exportBank})[expTab]).catch(e=>toast('匯出失敗：'+e.message));
@@ -595,6 +638,7 @@ async function pickOneDrive(){
 
 /* 步驟 2 */
 function renderOcr(){
+  $('#ocrCfgLine').innerHTML = ocrCfgLine();
   if(!loaded){$('#ocrlist').innerHTML='<div class="small muted">請先在步驟 1 載入檔案。</div>';return;}
   const real = FILES.filter(f=>f.src!=='demo').length;
   $('#ocrlist').innerHTML = (real?`<div class="reason" style="margin:0 0 10px">你已選了 ${real} 個真實檔案。<b>OCR 辨識是下一項要完成的功能</b>，目前這一步之後還是用示範資料跑流程。</div>`:'') + DOCS.map(d=>`<div class="ocrrow"><span class="nm">${d.f}</span>
@@ -609,6 +653,45 @@ function runOcr(){
     setTimeout(()=>{$('#p'+d.id).style.width='100%'; const s=$('#s'+d.id); s.textContent='完成'; s.classList.add('ok');
       if(i===DOCS.length-1){ocrDone=true; toast('辨識完成，已初步分類'); setTimeout(next,600);} }, i*160+500);
   });
+}
+
+/* 辨識設定（存在這台電腦的瀏覽器） */
+const OCR_DEFAULT = {lang:'chi_tra+eng', psm:'3', dpi:'200', pages:'all', workers:'2', th:70, gray:true, bin:false, rotate:true, upscale:true};
+const OCR_LABEL = {lang:{'chi_tra+eng':'中文繁體＋英文', chi_tra:'中文繁體', eng:'英文'}, psm:{'3':'自動版面','4':'單欄文字','6':'整塊文字','11':'零散文字'}};
+let ocfg = {...OCR_DEFAULT};
+try{ Object.assign(ocfg, JSON.parse(localStorage.getItem('ocrSettings')||'{}')); }catch(e){}
+const OC_SEL = ['lang','psm','dpi','pages','workers'], OC_CHK = ['gray','bin','rotate','upscale'];
+function fillOcrDlg(c){
+  OC_SEL.forEach(k=>$('#oc_'+k).value=c[k]); OC_CHK.forEach(k=>$('#oc_'+k).checked=!!c[k]);
+  $('#oc_th').value=c.th; $('#oc_thv').textContent=c.th+'%';
+}
+function openOcrCfg(){ fillOcrDlg(ocfg); $('#ocrDlg').showModal(); }
+function resetOcrCfg(){ fillOcrDlg(OCR_DEFAULT); toast('已恢復預設，按「儲存」才會生效'); }
+function saveOcrCfg(){
+  OC_SEL.forEach(k=>ocfg[k]=$('#oc_'+k).value); OC_CHK.forEach(k=>ocfg[k]=$('#oc_'+k).checked); ocfg.th=+$('#oc_th').value;
+  try{ localStorage.setItem('ocrSettings', JSON.stringify(ocfg)); }catch(e){}
+  $('#ocrDlg').close(); applyThreshold(); renderView(); toast('辨識設定已儲存');
+}
+function ocrCfgLine(){
+  const pre = [ocfg.gray&&'灰階', ocfg.bin&&'二值化', ocfg.rotate&&'自動轉正', ocfg.upscale&&'小圖放大'].filter(Boolean).join('、')||'無';
+  return `辨識語言：<b>${OCR_LABEL.lang[ocfg.lang]}</b>・版面：${OCR_LABEL.psm[ocfg.psm]}・PDF ${ocfg.dpi} DPI（${ocfg.pages==='all'?'全部頁面':'只第 1 頁'}）・同時 ${ocfg.workers} 個・前處理：${pre}・待確認門檻 ${ocfg.th}%　<button class="mini" onclick="openOcrCfg()">修改</button>`;
+}
+// 依門檻重新標記「待確認」；人工確認過的單據不動
+function applyThreshold(){ DOCS.forEach(d=>{ if(!d.confirmed) d.review = conf(d)*100 < ocfg.th; }); }
+applyThreshold();
+
+/* 刪除單據（未分類的單據可直接刪掉，不進入後續步驟） */
+function deleteDocs(ids){
+  if(!ids.length) return toast('沒有未分類的單據');
+  const names = ids.map(i=>DOCS[i].f);
+  if(!confirm(`確定要刪除 ${ids.length} 張單據？\n${names.slice(0,5).join('\n')}${names.length>5?'\n…':''}\n\n刪除後不會出現在欄位核對與匯出。`)) return;
+  const set = new Set(ids);
+  for(let i=DOCS.length-1;i>=0;i--) if(set.has(i)) DOCS.splice(i,1);
+  DOCS.forEach((d,i)=>d.id=i);
+  for(let i=FILES.length-1;i>=0;i--) if(names.includes(FILES[i].name)) FILES.splice(i,1);
+  sel = Math.min(sel, DOCS.length-1); payees = null;
+  if(filter!=='all' && filter!=='review' && !DOCS.some(d=>d.cat===filter)) filter='all';
+  renderView(); toast(`已刪除 ${ids.length} 張單據`);
 }
 
 /* 步驟 3 */
@@ -628,7 +711,7 @@ function docCard(d){
     ${d.review?'<span class="flag">待確認</span>':''}
     <div class="thumb">${d.text.slice(0,6).map(l=>l.replace(/<\/?mark>/g,'')).map((l,i)=>i?l:`<b>${l}</b>`).join('<br>')}</div>
     <div class="nm" title="${d.f}">${d.f}</div>
-    <div class="meta"><input type="checkbox" ${d.checked?'checked':''} onclick="event.stopPropagation();DOCS[${d.id}].checked=this.checked" aria-label="勾選">${catTag(d.cat)}<span class="conf ${p<.7?'low':''}">${Math.round(p*100)}%</span></div>
+    <div class="meta"><input type="checkbox" ${d.checked?'checked':''} onclick="event.stopPropagation();DOCS[${d.id}].checked=this.checked" aria-label="勾選">${catTag(d.cat)}<span class="conf ${p*100<ocfg.th?'low':''}">${Math.round(p*100)}%</span>${d.cat==='other'?`<button class="del" title="刪除這張單據" onclick="event.stopPropagation();deleteDocs([${d.id}])">刪除</button>`:''}</div>
   </div>`;
 }
 function renderGrid(){
@@ -643,7 +726,7 @@ function renderGrid(){
   } else $('#grid').innerHTML = list.length?`<div class="grid">${list.map(docCard).join('')}</div>`:'<div class="small muted">這一類沒有單據。</div>';
 }
 function pick(i){sel=i; renderGrid(); renderDetail(); if(innerWidth<=900) $('#detail').scrollIntoView({behavior:'smooth'});}
-function setCat(i,k){const d=DOCS[i]; d.cat=k; d.review=false; d.v=Object.fromEntries(CATS[k].fields.map(f=>[f,d.v[f]??''])); renderChips('#chips',filter,'setFilter'); renderGrid(); renderDetail(); toast(`已改為「${CATS[k].name}」`);}
+function setCat(i,k){const d=DOCS[i]; d.cat=k; d.review=false; d.confirmed=true; d.v=Object.fromEntries(CATS[k].fields.map(f=>[f,d.v[f]??''])); renderChips('#chips',filter,'setFilter'); renderGrid(); renderDetail(); toast(`已改為「${CATS[k].name}」`);}
 function renderDetail(){
   const d = DOCS[sel]; if(!d) return;
   const cands = Object.entries(d.cands).sort((a,b)=>b[1]-a[1]);
@@ -663,7 +746,8 @@ function renderDetail(){
     <div class="kv">${CATS[d.cat].fields.map(f=>`<label class="small muted">${f}</label><input type="text" value="${d.v[f]??''}" oninput="DOCS[${d.id}].v['${f}']=this.value" placeholder="未辨識">`).join('')}</div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button onclick="pick(${(sel-1+DOCS.length)%DOCS.length})">← 上一張</button>
-      <button class="primary" onclick="DOCS[${d.id}].review=false;pick(${(sel+1)%DOCS.length});renderChips('#chips',filter,'setFilter')">確認，下一張 →</button>
+      ${d.cat==='other'?`<button class="danger" onclick="deleteDocs([${d.id}])">刪除這張</button>`:''}
+      <button class="primary" onclick="DOCS[${d.id}].review=false;DOCS[${d.id}].confirmed=true;pick(${(sel+1)%DOCS.length});renderChips('#chips',filter,'setFilter')">確認，下一張 →</button>
     </div>`;
 }
 function batch(){
