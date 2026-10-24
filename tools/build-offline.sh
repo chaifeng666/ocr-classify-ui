@@ -8,7 +8,7 @@ rm -rf dist && mkdir -p "$OUT/lib"
 sed -e '/fonts.googleapis.com/d' -e '/fonts.gstatic.com/d' \
     -e 's/"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui/"Microsoft JhengHei","LiHei Pro",system-ui/' \
     index.html > "$OUT/index.html"
-cp lib/xlsx.full.min.js lib/xlsx.LICENSE "$OUT/lib/"
+cp -r lib/. "$OUT/lib/"
 cp offline/README.txt offline/start-windows.bat offline/server.ps1 offline/start-mac-linux.command SETUP.md "$OUT/"
 [ -f sbom/SBOM.md ] && cp sbom/SBOM.md "$OUT/"
 chmod +x "$OUT/start-mac-linux.command"

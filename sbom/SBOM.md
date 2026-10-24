@@ -1,10 +1,10 @@
 # SBOM 軟體物料清單
 
-產生時間：2026-10-24T14:17:48+00:00　格式：CycloneDX 1.5（[sbom.cdx.json](sbom.cdx.json)）
+產生時間：2026-10-24T14:32:50+00:00　格式：CycloneDX 1.5（[sbom.cdx.json](sbom.cdx.json)）
 
 檢查目標：**不使用中國大陸來源的元件、模型、字型、CDN。**
 
-結果：✅ 通過 25 項、⚠️ 需注意 3 項、🗑️ 已移除 2 項（舊版已移除）。所有隨附的程式庫與模型都不是中國大陸來源；需注意的只有「字型」。
+結果：✅ 通過 29 項、⚠️ 需注意 3 項、🗑️ 已移除 2 項（舊版已移除）。所有隨附的程式庫與模型都不是中國大陸來源；需注意的只有「字型」。
 
 ## 需注意項目與替代方案
 
@@ -19,16 +19,20 @@
 |---|---|---|---|---|---|---|---|
 | 1 | ocr-classify-ui index.html（自行開發） | main | 專案自有 | chaifeng666 | 臺灣 | GitHub repo chaifeng666/ocr-classify-ui | ✅ 通過 |
 | 2 | SheetJS（xlsx） | 0.18.5 | Apache-2.0 | SheetJS LLC | 美國 | npm registry → 放在 repo lib/（自行託管，不走 CDN） | ✅ 通過 |
-| 3 | Noto Sans TC（思源黑體繁中） | Google Fonts 目前版 | OFL-1.1 | Google LLC／Adobe Inc. | 美國（發行者） | fonts.googleapis.com / fonts.gstatic.com（只有網路版載入） | ⚠️ 需注意 |
-| 4 | PingFang TC（蘋方，系統字型，僅備援） | macOS／iOS 內建 | Apple 系統授權 | Apple Inc. | 美國（發行者） | 不隨附、不下載；只在 Apple 裝置上當備援字型 | ⚠️ 需注意 |
-| 5 | Microsoft JhengHei（微軟正黑體，系統字型） | Windows 內建 | Windows 系統授權 | Microsoft Corporation | 美國 | 不隨附、不下載 | ✅ 通過 |
-| 6 | LiHei Pro（儷黑 Pro，系統字型，僅離線版） | macOS 內建 | Apple 系統授權 | 華康科技 DynaComware（Apple 隨附） | 臺灣 | 不隨附、不下載 | ✅ 通過 |
-| 7 | Google Identity Services（gsi/client） | 線上最新版 | Google API 服務條款 | Google LLC | 美國 | accounts.google.com（只有按「Google Drive」時才載入） | ✅ 通過 |
-| 8 | Google API Loader＋Google Picker | 線上最新版 | Google API 服務條款 | Google LLC | 美國 | apis.google.com（只有按「Google Drive」時才載入） | ✅ 通過 |
-| 9 | OneDrive File Picker SDK（OneDrive.js） | 7.2 | Microsoft API 使用條款 | Microsoft Corporation | 美國 | js.live.net（只有按「OneDrive」時才載入） | ✅ 通過 |
-| 10 | GitHub Pages（網站託管） | — | GitHub 服務條款 | GitHub, Inc.（Microsoft） | 美國 | chaifeng666.github.io | ✅ 通過 |
-| 11 | 政府電子採購網 拒絕往來廠商查詢（外部連結） | — | 政府網站 | 行政院公共工程委員會 | 臺灣 | web.pcc.gov.tw（只有按「查拒往」時開新分頁） | ✅ 通過 |
-| 12 | 離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command | — | 專案自有 | chaifeng666 | 臺灣 | repo offline/ | ✅ 通過 |
+| 3 | tesseract.js（含 worker） | 5.1.1 | Apache-2.0 | Project Naptha（Kevin Kwok 等） | 美國 | npm registry → repo lib/ | ✅ 通過 |
+| 4 | tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly） | 5.1.1 | Apache-2.0（Tesseract）／BSD-2-Clause（Leptonica） | Tesseract：HP → Google；Leptonica：Dan Bloomberg | 美國 | npm registry → repo lib/core/ | ✅ 通過 |
+| 5 | Tesseract 語言資料 chi_tra＋eng | 4.0.0 best_int | Apache-2.0 | Google LLC（tessdata） | 美國 | repo lib/lang/ | ✅ 通過 |
+| 6 | PDF.js（pdfjs-dist，含 worker 與 Adobe CMap） | 3.11.174 | Apache-2.0（CMap：BSD-3-Clause） | Mozilla Foundation／Adobe Inc. | 美國 | npm registry → repo lib/ | ✅ 通過 |
+| 7 | Noto Sans TC（思源黑體繁中） | Google Fonts 目前版 | OFL-1.1 | Google LLC／Adobe Inc. | 美國（發行者） | fonts.googleapis.com / fonts.gstatic.com（只有網路版載入） | ⚠️ 需注意 |
+| 8 | PingFang TC（蘋方，系統字型，僅備援） | macOS／iOS 內建 | Apple 系統授權 | Apple Inc. | 美國（發行者） | 不隨附、不下載；只在 Apple 裝置上當備援字型 | ⚠️ 需注意 |
+| 9 | Microsoft JhengHei（微軟正黑體，系統字型） | Windows 內建 | Windows 系統授權 | Microsoft Corporation | 美國 | 不隨附、不下載 | ✅ 通過 |
+| 10 | LiHei Pro（儷黑 Pro，系統字型，僅離線版） | macOS 內建 | Apple 系統授權 | 華康科技 DynaComware（Apple 隨附） | 臺灣 | 不隨附、不下載 | ✅ 通過 |
+| 11 | Google Identity Services（gsi/client） | 線上最新版 | Google API 服務條款 | Google LLC | 美國 | accounts.google.com（只有按「Google Drive」時才載入） | ✅ 通過 |
+| 12 | Google API Loader＋Google Picker | 線上最新版 | Google API 服務條款 | Google LLC | 美國 | apis.google.com（只有按「Google Drive」時才載入） | ✅ 通過 |
+| 13 | OneDrive File Picker SDK（OneDrive.js） | 7.2 | Microsoft API 使用條款 | Microsoft Corporation | 美國 | js.live.net（只有按「OneDrive」時才載入） | ✅ 通過 |
+| 14 | GitHub Pages（網站託管） | — | GitHub 服務條款 | GitHub, Inc.（Microsoft） | 美國 | chaifeng666.github.io | ✅ 通過 |
+| 15 | 政府電子採購網 拒絕往來廠商查詢（外部連結） | — | 政府網站 | 行政院公共工程委員會 | 臺灣 | web.pcc.gov.tw（只有按「查拒往」時開新分頁） | ✅ 通過 |
+| 16 | 離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command | — | 專案自有 | chaifeng666 | 臺灣 | repo offline/ | ✅ 通過 |
 
 ## ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）
 
@@ -56,6 +60,10 @@
 ## 說明
 
 - **ocr-classify-ui index.html（自行開發）**：不含任何第三方程式碼
+- **tesseract.js（含 worker）**：與 ocr-app 使用相同檔案（SHA-256 相同）
+- **tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）**：與 ocr-app 使用相同檔案（SHA-256 相同）
+- **Tesseract 語言資料 chi_tra＋eng**：與 ocr-app 使用相同檔案（SHA-256 相同）
+- **PDF.js（pdfjs-dist，含 worker 與 Adobe CMap）**：與 ocr-app 使用相同檔案（SHA-256 相同）
 - **Noto Sans TC（思源黑體繁中）**：Noto Sans CJK／思源黑體由 Adobe 與 Google 發行，但依公開資料，中文字形由合作字型廠「常州華文」（中國大陸）參與設計。離線版已不載入；網路版建議改用電腦內建字型（見下方替代方案）。
 - **PingFang TC（蘋方，系統字型，僅備援）**：依公開資料，蘋方由 Apple 與「常州華文」（中國大陸）合作設計。離線版已從字型清單移除；網路版建議一併移除。
 - **政府電子採購網 拒絕往來廠商查詢（外部連結）**：只開啟查詢頁並把統編複製到剪貼簿，本網頁不會傳送任何資料。

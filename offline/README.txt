@@ -8,19 +8,21 @@ OCR 會計單據分類（離線版）
   Windows：雙擊 start-windows.bat，瀏覽器會自動打開 http://localhost:8765/
            （黑色視窗使用期間不要關，用完直接關掉即可）
   Mac／Linux：雙擊 start-mac-linux.command（需要 python3）
-  也可以直接雙擊 index.html 開啟；但「Google Drive」「OneDrive」按鈕
-  需要用上面的方式（localhost）開啟才能用。
+  請一定要用上面的方式（localhost）開啟：真實檔案的 OCR 辨識、Google Drive、OneDrive
+  都需要這樣開。直接雙擊 index.html 只能看示範資料。
 
 【離線版與網路版的差別】
   1. 不載入 Google Fonts，改用電腦內建字型（Windows：微軟正黑體）。
-  2. Excel 匯出用的 SheetJS 已放在 lib/，不需連網。
+  2. OCR 引擎（Tesseract）、繁中／英文語言資料、PDF.js、SheetJS 都已放在 lib/，不需連網。
   3. Google Drive／OneDrive 選檔本來就要連網；若要在離線版使用，
      需在 Google／Microsoft 後台把 http://localhost:8765 加進允許的網址（見 SETUP.md）。
 
 【內容】
   index.html               主程式
+  lib/tesseract.min.js、worker.min.js、core/   Tesseract.js 5.1.1（Apache-2.0，美國）
+  lib/lang/                chi_tra、eng 語言資料（Apache-2.0，Google）
+  lib/pdf.min.js、pdf.worker.min.js、cmaps/     PDF.js 3.11.174（Apache-2.0，Mozilla）
   lib/xlsx.full.min.js     SheetJS 0.18.5（Apache-2.0，美國 SheetJS LLC）
-  lib/xlsx.LICENSE         SheetJS 授權條款
   start-windows.bat        Windows 啟動檔
   server.ps1               Windows 本機伺服器（只接受本機連線）
   start-mac-linux.command  Mac／Linux 啟動檔

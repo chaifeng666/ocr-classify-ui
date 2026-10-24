@@ -39,6 +39,12 @@ add(A, 'ocr-classify-ui index.html（自行開發）', 'main', 'application', '�
 add(A, 'SheetJS（xlsx）', '0.18.5', 'library', 'Apache-2.0', 'SheetJS LLC', '美國',
     'npm registry → 放在 repo lib/（自行託管，不走 CDN）', '匯出 Excel', OK, '',
     os.path.join(ROOT, 'lib', 'xlsx.full.min.js'), 'pkg:npm/xlsx@0.18.5')
+for nm, ver, lic, sup, src, use, rel, purl in [
+    ('tesseract.js（含 worker）', '5.1.1', 'Apache-2.0', 'Project Naptha（Kevin Kwok 等）', 'npm registry → repo lib/', 'OCR 主程式', 'lib/tesseract.min.js', 'pkg:npm/tesseract.js@5.1.1'),
+    ('tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）', '5.1.1', 'Apache-2.0（Tesseract）／BSD-2-Clause（Leptonica）', 'Tesseract：HP → Google；Leptonica：Dan Bloomberg', 'npm registry → repo lib/core/', 'OCR 引擎', 'lib/core/tesseract-core-simd-lstm.wasm.js', 'pkg:npm/tesseract.js-core@5.1.1'),
+    ('Tesseract 語言資料 chi_tra＋eng', '4.0.0 best_int', 'Apache-2.0', 'Google LLC（tessdata）', 'repo lib/lang/', '繁中／英文辨識模型', 'lib/lang/chi_tra.traineddata.gz', 'pkg:generic/tessdata/chi_tra@4.0.0'),
+    ('PDF.js（pdfjs-dist，含 worker 與 Adobe CMap）', '3.11.174', 'Apache-2.0（CMap：BSD-3-Clause）', 'Mozilla Foundation／Adobe Inc.', 'npm registry → repo lib/', '讀取 PDF、轉成影像', 'lib/pdf.min.js', 'pkg:npm/pdfjs-dist@3.11.174')]:
+    add(A, nm, ver, 'library' if 'lang' not in rel else 'data', lic, sup, '美國', src, use, OK, '與 ocr-app 使用相同檔案（SHA-256 相同）', os.path.join(ROOT, rel), purl)
 add(A, 'Noto Sans TC（思源黑體繁中）', 'Google Fonts 目前版', 'font', 'OFL-1.1', 'Google LLC／Adobe Inc.', '美國（發行者）',
     'fonts.googleapis.com / fonts.gstatic.com（只有網路版載入）', '畫面字型', WARN,
     'Noto Sans CJK／思源黑體由 Adobe 與 Google 發行，但依公開資料，中文字形由合作字型廠「常州華文」（中國大陸）參與設計。'

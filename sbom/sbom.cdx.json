@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:1119b65f-62ba-4013-9167-4e3bfff03763",
+  "serialNumber": "urn:uuid:a08aaa2c-f58e-4ae5-8b69-3ebd92123f59",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-10-24T14:17:48+00:00",
+    "timestamp": "2026-10-24T14:32:50+00:00",
     "component": {
       "type": "application",
       "name": "OCR 輸入資料辨識（ocr-classify-ui＋ocr-app）",
@@ -62,7 +62,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "4277a16048e34bfc8a54e798a775d9f178d49ec30d33159d0c5e4b49f862f835"
+          "content": "15ff04b3916c406b6643b4a979459d173b13206c875e57045aeb711a76495271"
         }
       ]
     },
@@ -111,6 +111,198 @@
     },
     {
       "bom-ref": "c3",
+      "type": "library",
+      "name": "tesseract.js（含 worker）",
+      "version": "5.1.1",
+      "supplier": {
+        "name": "Project Naptha（Kevin Kwok 等）"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → repo lib/"
+        },
+        {
+          "name": "用途",
+          "value": "OCR 主程式"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "與 ocr-app 使用相同檔案（SHA-256 相同）"
+        }
+      ],
+      "purl": "pkg:npm/tesseract.js@5.1.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a8e29918d098b2b06e1012bdaeffb4aec0445c5d5654709023e0bd1f442a80e8"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c4",
+      "type": "library",
+      "name": "tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）",
+      "version": "5.1.1",
+      "supplier": {
+        "name": "Tesseract：HP → Google；Leptonica：Dan Bloomberg"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0（Tesseract）／BSD-2-Clause（Leptonica）"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → repo lib/core/"
+        },
+        {
+          "name": "用途",
+          "value": "OCR 引擎"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "與 ocr-app 使用相同檔案（SHA-256 相同）"
+        }
+      ],
+      "purl": "pkg:npm/tesseract.js-core@5.1.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ce20eda9533cbed1e6c2b4276fbae1e0adc61b6754b5513084be601787b457cf"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c5",
+      "type": "data",
+      "name": "Tesseract 語言資料 chi_tra＋eng",
+      "version": "4.0.0 best_int",
+      "supplier": {
+        "name": "Google LLC（tessdata）"
+      },
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "repo lib/lang/"
+        },
+        {
+          "name": "用途",
+          "value": "繁中／英文辨識模型"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "與 ocr-app 使用相同檔案（SHA-256 相同）"
+        }
+      ],
+      "purl": "pkg:generic/tessdata/chi_tra@4.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "11fe2610dab05d8a880d02f193ce70203f4c4bbe061b987d5529a2c038a22743"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c6",
+      "type": "library",
+      "name": "PDF.js（pdfjs-dist，含 worker 與 Adobe CMap）",
+      "version": "3.11.174",
+      "supplier": {
+        "name": "Mozilla Foundation／Adobe Inc."
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0（CMap：BSD-3-Clause）"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "美國"
+        },
+        {
+          "name": "取得方式",
+          "value": "npm registry → repo lib/"
+        },
+        {
+          "name": "用途",
+          "value": "讀取 PDF、轉成影像"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "與 ocr-app 使用相同檔案（SHA-256 相同）"
+        }
+      ],
+      "purl": "pkg:npm/pdfjs-dist@3.11.174",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5b5799e6f8c680663207ac5b42ee14eed2a406fa7af48f50c154f0c0b1566946"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c7",
       "type": "file",
       "name": "Noto Sans TC（思源黑體繁中）",
       "version": "Google Fonts 目前版",
@@ -151,7 +343,7 @@
       "purl": "pkg:generic/google-fonts/noto-sans-tc"
     },
     {
-      "bom-ref": "c4",
+      "bom-ref": "c8",
       "type": "file",
       "name": "PingFang TC（蘋方，系統字型，僅備援）",
       "version": "macOS／iOS 內建",
@@ -191,7 +383,7 @@
       ]
     },
     {
-      "bom-ref": "c5",
+      "bom-ref": "c9",
       "type": "file",
       "name": "Microsoft JhengHei（微軟正黑體，系統字型）",
       "version": "Windows 內建",
@@ -227,7 +419,7 @@
       ]
     },
     {
-      "bom-ref": "c6",
+      "bom-ref": "c10",
       "type": "file",
       "name": "LiHei Pro（儷黑 Pro，系統字型，僅離線版）",
       "version": "macOS 內建",
@@ -263,7 +455,7 @@
       ]
     },
     {
-      "bom-ref": "c7",
+      "bom-ref": "c11",
       "type": "platform",
       "name": "Google Identity Services（gsi/client）",
       "version": "線上最新版",
@@ -299,7 +491,7 @@
       ]
     },
     {
-      "bom-ref": "c8",
+      "bom-ref": "c12",
       "type": "platform",
       "name": "Google API Loader＋Google Picker",
       "version": "線上最新版",
@@ -335,7 +527,7 @@
       ]
     },
     {
-      "bom-ref": "c9",
+      "bom-ref": "c13",
       "type": "platform",
       "name": "OneDrive File Picker SDK（OneDrive.js）",
       "version": "7.2",
@@ -371,7 +563,7 @@
       ]
     },
     {
-      "bom-ref": "c10",
+      "bom-ref": "c14",
       "type": "platform",
       "name": "GitHub Pages（網站託管）",
       "version": "—",
@@ -407,7 +599,7 @@
       ]
     },
     {
-      "bom-ref": "c11",
+      "bom-ref": "c15",
       "type": "platform",
       "name": "政府電子採購網 拒絕往來廠商查詢（外部連結）",
       "version": "—",
@@ -449,7 +641,7 @@
       ]
     },
     {
-      "bom-ref": "c12",
+      "bom-ref": "c16",
       "type": "application",
       "name": "離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command",
       "version": "—",
@@ -491,7 +683,7 @@
       ]
     },
     {
-      "bom-ref": "c13",
+      "bom-ref": "c17",
       "type": "application",
       "name": "ocr.html（自行開發）",
       "version": "2026-10-24",
@@ -535,7 +727,7 @@
       ]
     },
     {
-      "bom-ref": "c14",
+      "bom-ref": "c18",
       "type": "library",
       "name": "tesseract.js",
       "version": "5.1.1",
@@ -578,7 +770,7 @@
       ]
     },
     {
-      "bom-ref": "c15",
+      "bom-ref": "c19",
       "type": "library",
       "name": "tesseract.js worker",
       "version": "5.1.1",
@@ -621,7 +813,7 @@
       ]
     },
     {
-      "bom-ref": "c16",
+      "bom-ref": "c20",
       "type": "library",
       "name": "tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）",
       "version": "5.1.1",
@@ -670,7 +862,7 @@
       ]
     },
     {
-      "bom-ref": "c17",
+      "bom-ref": "c21",
       "type": "data",
       "name": "Tesseract 語言資料 chi_tra（繁體中文）",
       "version": "4.0.0 best_int",
@@ -713,7 +905,7 @@
       ]
     },
     {
-      "bom-ref": "c18",
+      "bom-ref": "c22",
       "type": "data",
       "name": "Tesseract 語言資料 eng（英文）",
       "version": "4.0.0 best_int",
@@ -756,7 +948,7 @@
       ]
     },
     {
-      "bom-ref": "c19",
+      "bom-ref": "c23",
       "type": "library",
       "name": "PDF.js（pdfjs-dist）",
       "version": "3.11.174",
@@ -799,7 +991,7 @@
       ]
     },
     {
-      "bom-ref": "c20",
+      "bom-ref": "c24",
       "type": "library",
       "name": "PDF.js worker",
       "version": "3.11.174",
@@ -842,7 +1034,7 @@
       ]
     },
     {
-      "bom-ref": "c21",
+      "bom-ref": "c25",
       "type": "data",
       "name": "Adobe CMap 字元對照表（pdfjs-dist/cmaps）",
       "version": "3.11.174 隨附",
@@ -882,7 +1074,7 @@
       ]
     },
     {
-      "bom-ref": "c22",
+      "bom-ref": "c26",
       "type": "library",
       "name": "SheetJS（xlsx）",
       "version": "0.18.5",
@@ -925,7 +1117,7 @@
       ]
     },
     {
-      "bom-ref": "c23",
+      "bom-ref": "c27",
       "type": "library",
       "name": "mammoth",
       "version": "1.8.0",
@@ -968,7 +1160,7 @@
       ]
     },
     {
-      "bom-ref": "c24",
+      "bom-ref": "c28",
       "type": "library",
       "name": "JSZip",
       "version": "3.10.1",
@@ -1011,7 +1203,7 @@
       ]
     },
     {
-      "bom-ref": "c25",
+      "bom-ref": "c29",
       "type": "data",
       "name": "手寫數字辨識模型 DIGIT_NET（自行訓練）",
       "version": "2026-10-13",
@@ -1053,7 +1245,7 @@
       ]
     },
     {
-      "bom-ref": "c26",
+      "bom-ref": "c30",
       "type": "platform",
       "name": "jsDelivr CDN",
       "version": "—",
@@ -1093,7 +1285,7 @@
       ]
     },
     {
-      "bom-ref": "c27",
+      "bom-ref": "c31",
       "type": "file",
       "name": "系統字型：Microsoft JhengHei／PingFang TC／Noto Sans TC",
       "version": "系統內建",
@@ -1135,7 +1327,7 @@
       ]
     },
     {
-      "bom-ref": "c28",
+      "bom-ref": "c32",
       "type": "application",
       "name": "離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command",
       "version": "—",
@@ -1179,7 +1371,7 @@
       ]
     },
     {
-      "bom-ref": "c29",
+      "bom-ref": "c33",
       "type": "library",
       "name": "PaddleOCR PP-OCRv5",
       "version": "—",
@@ -1219,7 +1411,7 @@
       ]
     },
     {
-      "bom-ref": "c30",
+      "bom-ref": "c34",
       "type": "library",
       "name": "OpenCC",
       "version": "—",
