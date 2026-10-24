@@ -158,6 +158,12 @@ table.t tr.warn td{background:color-mix(in srgb,var(--warn) 10%,transparent)}
 table.t td select{font-size:13px;padding:2px 4px}
 table.t tr.invrow td{background:var(--soft)}
 table.pay td.small:last-child{white-space:nowrap}
+.pickcell{display:flex;gap:4px;align-items:center}
+button.mini{padding:2px 8px;font-size:12px}
+#acctDlg{max-width:860px}
+#acctDlg table.t tr.same td{background:color-mix(in srgb,var(--ok) 12%,transparent)}
+#acctDlg table.t tbody tr{cursor:pointer}
+#acctDlg table.t tbody tr:hover td{background:var(--soft)}
 .chk{border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:8px}
 .chk ul{margin:4px 0 0;padding-left:20px;max-height:200px;overflow:auto}
 .chk.err{background:color-mix(in srgb,var(--err) 10%,transparent);border:1px solid var(--err)}
@@ -284,6 +290,19 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     <button class="primary" onclick="saveCloud()">儲存</button>
   </div>
 </dialog>
+<dialog id="acctDlg">
+  <h3 style="margin:0 0 4px">從帳戶清冊挑選帳號</h3>
+  <div class="small muted" id="acctFor" style="margin-bottom:8px"></div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+    <input type="text" id="acctQ" placeholder="搜尋戶名、銀行、帳號…" oninput="renderAcctList()" style="flex:1;min-width:180px">
+    <label class="small"><input type="checkbox" id="acctName" checked> 同時帶入戶名</label>
+  </div>
+  <div class="tblwrap" id="acctList"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap">
+    <button onclick="pickAcct(-1)">清除這位的帳戶資料</button>
+    <button class="primary" onclick="acctDlg.close()">關閉</button>
+  </div>
+</dialog>
 <div id="toast"></div>
 
 <script>
@@ -327,6 +346,12 @@ const DOCS = [
  {f:'存摺封面_示範銀行.jpg', t:'jpg', cat:'bank', cands:{bank:.97},
   text:['示範商業<mark>銀行</mark>','板橋<mark>分行</mark>','<mark>存摺</mark> PASSBOOK','分行代號 999-0001','<mark>帳號</mark> 0123-456-789012','<mark>戶名</mark> 王小明'],
   v:{'銀行':'示範商業銀行','分行':'板橋分行','金融機構代號':'9990001','帳號':'0123-456-789012','戶名':'王小明'}},
+ {f:'存摺封面_好好文具行.jpg', t:'jpg', cat:'bank', cands:{bank:.95},
+  text:['範例商業<mark>銀行</mark>','信義<mark>分行</mark>','<mark>存摺</mark>','分行代號 888-0002','<mark>帳號</mark> 9876-543-210987','<mark>戶名</mark> 好好文具行'],
+  v:{'銀行':'範例商業銀行','分行':'信義分行','金融機構代號':'8880002','帳號':'9876-543-210987','戶名':'好好文具行'}},
+ {f:'存摺封面_天天印刷.jpg', t:'jpg', cat:'bank', cands:{bank:.96},
+  text:['示範信用合作社','中和分社','<mark>存摺</mark>','分行代號 777-0003','<mark>帳號</mark> 0011-2233-4455','<mark>戶名</mark> 天天印刷有限公司'],
+  v:{'銀行':'示範信用合作社','分行':'中和分社','金融機構代號':'7770003','帳號':'0011-2233-4455','戶名':'天天印刷有限公司'}},
  {f:'水費_115年9月.pdf', t:'pdf', cat:'water', cands:{water:.93,power:.18},
   text:['OO<mark>自來水</mark>事業處','<mark>水費</mark>繳費憑證','用戶：'+ORG,'<mark>水號</mark> 9-12-345678-9','計費期間 115/07/20–115/09/18','<mark>用水度數</mark> 38 度　應繳 486 元'],
   v:{'計費期間':'115/07/20–115/09/18','水號':'9-12-345678-9','用水度數':'38','金額':'486'}},
@@ -453,7 +478,7 @@ function clearFiles(){ FILES.splice(0).forEach(f=>f.url&&URL.revokeObjectURL(f.u
 function loadDemo(){
   for(let i=FILES.length-1;i>=0;i--) if(FILES[i].src==='demo') FILES.splice(i,1);
   DOCS.forEach(d=>FILES.push({id:++fileSeq, name:d.f, type:d.t, size:null, blob:null, src:'demo', url:null}));
-  loaded = true; renderFiles(); toast('已載入 14 張示範單據（假資料）');
+  loaded = true; renderFiles(); toast(`已載入 ${DOCS.length} 張示範單據（假資料）`);
 }
 function renderFiles(){
   const by = {}; FILES.forEach(f=>by[f.src]=(by[f.src]||0)+1);
@@ -867,6 +892,7 @@ function renderXml(){
     <div class="tblwrap"><table class="t pay"><thead><tr><th>#</th>${PAY_EDIT.map(([,l])=>`<th>${l}</th>`).join('')}<th>來源單據</th></tr></thead><tbody>
     ${payees.map((p,i)=>`<tr><td>${i+1}</td>${PAY_EDIT.map(([k,,w])=>`<td${k==='checkamt'?' class="num"':''}>${
         k==='receipttype' ? `<select onchange="setPay(${i},'${k}',this.value)">${opt(RECEIPT_TYPES,p[k])}</select>`
+        : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button></span>`
         : `<input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
         <td class="small">${p.src.map(esc).join('<br>')}${p._bank?`<br><span class="muted">帳戶：${esc(p._bank)}</span>`:''}</td></tr>
       ${p.invoices.length?`<tr class="invrow"><td></td><td colspan="${PAY_EDIT.length+1}" class="small">發票明細：${p.invoices.map(v=>`${esc(v.receiptno)}（${esc(v.receiptdate)}，${esc(v.receiptamt)} 元）`).join('、')}</td></tr>`:''}`).join('')}
@@ -874,6 +900,35 @@ function renderXml(){
     <div id="xmlCheck" style="margin-top:12px"></div>
     <details style="margin-top:10px"><summary class="small">XML 預覽：<b id="xmlName"></b></summary><textarea id="xmlPreview" readonly></textarea></details>`;
   refreshXmlCheck();
+}
+
+/* 受款人 XML：跳出「帳戶清冊」挑選金融機構編號、名稱、帳號 */
+let acctFor = -1;
+const acctRows = () => DOCS.filter(d=>d.cat==='bank');
+function openAcctPicker(i){
+  acctFor = i; $('#acctQ').value = '';
+  $('#acctFor').innerHTML = `受款人：<b>${esc(payees[i].customername||'（未填名稱）')}</b>。點一列就會填入金融機構編號、金融機構名稱、帳號。綠色列是戶名和受款人名稱相同的帳戶。`;
+  renderAcctList(); $('#acctDlg').showModal();
+}
+function renderAcctList(){
+  const q = $('#acctQ').value.trim().toLowerCase(), name = payees[acctFor]?.customername || '';
+  const rows = acctRows().filter(d=>!q || [d.v['戶名'],d.v['銀行'],d.v['分行'],d.v['金融機構代號'],d.v['帳號']].join(' ').toLowerCase().includes(q))
+    .sort((a,b)=>(b.v['戶名']===name)-(a.v['戶名']===name));
+  $('#acctList').innerHTML = acctRows().length ? `<table class="t"><thead><tr><th>戶名</th><th>金融機構編號</th><th>金融機構名稱</th><th>帳號</th><th>來源單據</th></tr></thead><tbody>
+    ${rows.map(d=>`<tr class="${d.v['戶名']&&d.v['戶名']===name?'same':''}" onclick="pickAcct(${d.id})"><td>${esc(d.v['戶名']||'')}</td><td>${esc(digits(d.v['金融機構代號']))}</td><td>${esc((d.v['銀行']||'')+(d.v['分行']||''))}</td><td>${esc(digits(d.v['帳號']))}</td><td class="small">${esc(d.f)}</td></tr>`).join('')
+      || '<tr><td colspan="5" class="small muted">找不到符合的帳戶。</td></tr>'}
+    </tbody></table>` : '<div class="small muted">帳戶清冊是空的：步驟 3 沒有「銀行帳號」類的單據（存摺封面）。</div>';
+}
+function pickAcct(id){
+  const p = payees[acctFor];
+  if(id<0){ Object.assign(p, {bankno:'', bankname:'', bankaccount:'', bankaccountname:''}); delete p._bank; }
+  else{
+    const d = DOCS[id];
+    Object.assign(p, {bankno:digits(d.v['金融機構代號']), bankname:(d.v['銀行']||'')+(d.v['分行']||''), bankaccount:digits(d.v['帳號']), _bank:d.f});
+    if($('#acctName').checked) p.bankaccountname = d.v['戶名']||'';
+  }
+  $('#acctDlg').close(); renderXml();
+  toast(id<0 ? '已清除帳戶資料' : `已填入 ${p.bankname} ${p.bankaccount}`);
 }
 
 /* ---- C. 差旅費明細 ---- */
