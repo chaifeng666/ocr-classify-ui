@@ -76,6 +76,26 @@ main{max-width:1280px;margin:0 auto;padding:16px}
 .fitem{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
 .fitem .ico{width:30px;height:36px;border-radius:4px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);flex:none}
 .fitem .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.drop{cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--accent);background:var(--soft);color:var(--text)}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;font-size:12px;background:var(--bg)}
+.flisthead{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.flisthead:empty{display:none}
+.fitem .ico{overflow:hidden}
+.fitem .ico img{width:100%;height:100%;object-fit:cover}
+.fitem .info{display:flex;flex-direction:column;min-width:0;flex:1}
+.fitem .sub{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.src{font-size:11px;border-radius:999px;padding:0 7px;border:1px solid var(--line);white-space:nowrap}
+.src.local{color:var(--ok);border-color:var(--ok)} .src.paste{color:var(--c-rcpt);border-color:var(--c-rcpt)}
+.src.gdrive{color:var(--c-inv);border-color:var(--c-inv)} .src.onedrive{color:var(--c-water);border-color:var(--c-water)}
+.src.demo{color:var(--muted)}
+.fitem .rm{border:none;background:none;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
+.fitem .rm:hover{color:var(--err)}
+fieldset.cfg{border:1px solid var(--line);border-radius:8px;margin:0 0 10px;padding:8px 12px 10px}
+fieldset.cfg legend{font-weight:600;padding:0 4px}
+fieldset.cfg label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);margin-top:6px}
+fieldset.cfg input{width:100%;margin-top:2px;color:var(--text)}
+code{font-size:12px;background:var(--soft);padding:1px 4px;border-radius:4px;word-break:break-all}
 
 /* 步驟 2 */
 .ocrrow{display:grid;grid-template-columns:minmax(0,1fr) 160px 70px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
@@ -162,7 +182,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 <header class="top">
   <div class="titlebar">
     <h1>OCR 會計單據分類</h1>
-    <span class="proto">UI 原型・假資料</span>
+    <span class="proto">開發中・示範資料</span>
     <button class="ghost" id="themeBtn" title="切換深淺色">◐</button>
   </div>
   <nav class="stepper" id="stepper"></nav>
@@ -173,10 +193,13 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <!-- 1 上傳 -->
   <section class="step-view" data-step="1">
     <div class="panel">
-      <div class="drop">
-        <strong>把單據圖片或 PDF 拖到這裡</strong>，或按上方「選擇檔案」<br>
-        <span class="small">支援 JPG、PNG、PDF（多頁會自動拆成單張）。所有辨識都在本機瀏覽器完成，資料不會上傳。</span>
+      <div class="drop" id="drop">
+        <strong>把單據圖片或 PDF 拖到這裡</strong>，或按上方的「本機檔案」「Google Drive」「OneDrive」<br>
+        <span class="small">複製的圖片可直接按 <kbd>Ctrl</kbd>+<kbd>V</kbd>（Mac 為 <kbd>⌘</kbd>+<kbd>V</kbd>）貼上。支援 JPG、PNG、WEBP、BMP、GIF、PDF。<br>
+        檔案只在你的瀏覽器裡處理，不會上傳到任何伺服器。</span>
       </div>
+      <input type="file" id="fileIn" multiple accept="image/*,application/pdf,.pdf" hidden>
+      <div class="flisthead" id="flisthead"></div>
       <div class="flist" id="flist"></div>
     </div>
   </section>
@@ -230,6 +253,24 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
     <button onclick="toast('原型：規則儲存尚未接上')">儲存規則</button>
     <button class="primary" onclick="rulesDlg.close()">關閉</button>
+  </div>
+</dialog>
+<dialog id="cloudDlg">
+  <h3 style="margin:0 0 4px">雲端硬碟設定</h3>
+  <div class="small muted" style="margin-bottom:10px">Google Drive 與 OneDrive 的選檔視窗需要你自己的應用程式金鑰。設定只存在這台電腦的瀏覽器裡。金鑰不是密碼，但請在 Google／Microsoft 後台把可用網址限制在這個網站。</div>
+  <fieldset class="cfg"><legend>Google Drive</legend>
+    <label>API 金鑰（API key）<input type="text" id="gKey" placeholder="AIza…"></label>
+    <label>OAuth 用戶端 ID（Client ID）<input type="text" id="gClient" placeholder="xxxx.apps.googleusercontent.com"></label>
+    <label>專案編號（Project number）<input type="text" id="gApp" placeholder="123456789012"></label>
+  </fieldset>
+  <fieldset class="cfg"><legend>OneDrive</legend>
+    <label>應用程式（用戶端）識別碼（Application ID）<input type="text" id="oClient" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></label>
+    <div class="small muted">重新導向 URI 請登記：<code id="oRedirect"></code></div>
+  </fieldset>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap">
+    <button onclick="clearCloud()">清除設定</button>
+    <button onclick="cloudDlg.close()">取消</button>
+    <button class="primary" onclick="saveCloud()">儲存</button>
   </div>
 </dialog>
 <div id="toast"></div>
@@ -306,8 +347,8 @@ const DOCS = [
 DOCS.forEach((d,i)=>{d.id=i; d.auto=d.cat; d.checked=false;});
 
 const STEPS = [
-  {n:1, t:'上傳檔案',  s:'圖片 / PDF',      hint:'選擇或拖入要辨識的單據檔。',
-   act:[['選擇檔案','upload'],['載入示範檔','demo',1]]},
+  {n:1, t:'上傳檔案',  s:'圖片 / PDF',      hint:'從本機、Google Drive、OneDrive 選檔，或貼上複製的圖片。',
+   act:[['本機檔案','upload',1],['貼上圖片','paste'],['Google Drive','gdrive'],['OneDrive','onedrive'],['載入示範檔','demo'],['雲端設定','cloudcfg']]},
   {n:2, t:'OCR 辨識',  s:'中文繁體＋英文',  hint:'在本機瀏覽器辨識文字，完成後自動初步分類。',
    act:[['開始辨識','ocr',1],['辨識設定','setting']]},
   {n:3, t:'單據分類',  s:'自動分類＋人工確認', hint:'點選單據看原圖與分類理由；勾選多張可一次改分類。',
@@ -350,7 +391,12 @@ function renderView(){
 }
 
 function act(a){
-  if(a==='demo'||a==='upload'){loaded=true; renderFiles(); toast(a==='demo'?'已載入 14 張示範單據（假資料）':'原型：已用示範檔代替選檔'); return;}
+  if(a==='upload') return $('#fileIn').click();
+  if(a==='paste') return pasteFromButton();
+  if(a==='gdrive') return pickGoogle();
+  if(a==='onedrive') return pickOneDrive();
+  if(a==='cloudcfg') return openCloud();
+  if(a==='demo') return loadDemo();
   if(a==='ocr') return runOcr();
   if(a==='setting') return toast('原型：辨識設定尚未接上');
   if(a==='rules'){renderRules(); return $('#rulesDlg').showModal();}
@@ -363,14 +409,158 @@ function act(a){
 }
 
 /* 步驟 1 */
-function renderFiles(){
-  $('#flist').innerHTML = loaded ? DOCS.map(d=>`<div class="fitem"><span class="ico">${d.t.toUpperCase()}</span><span class="nm" title="${d.f}">${d.f}</span></div>`).join('')
-    : '<div class="small muted">尚未選擇檔案。可先按上方「載入示範檔」看流程。</div>';
+const FILES = [];   // {id, name, type, size, blob, src, url}
+let fileSeq = 0;
+const SRC_NAME = {local:'本機', paste:'貼上', gdrive:'Google Drive', onedrive:'OneDrive', demo:'示範'};
+const OK_TYPE = /^image\/|^application\/pdf$/;
+const OK_EXT = /\.(jpe?g|png|webp|bmp|gif|tiff?|pdf)$/i;
+const esc = t => String(t).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtSize = n => n==null?'':n<1024?n+' B':n<1048576?(n/1024).toFixed(0)+' KB':(n/1048576).toFixed(1)+' MB';
+
+function addFiles(list, src){
+  let n = 0; const skip = [];
+  for(const f of list){
+    if(!(OK_TYPE.test(f.type) || OK_EXT.test(f.name||''))){ skip.push(f.name||'(未命名)'); continue; }
+    if(src!=='paste' && FILES.some(x=>x.name===f.name && x.size===f.size && x.src===src)) continue;
+    const isPdf = f.type==='application/pdf' || /\.pdf$/i.test(f.name);
+    const ext = isPdf ? 'pdf' : ((f.name.match(/\.(\w+)$/)||[])[1] || f.type.split('/')[1] || 'img').toLowerCase().replace('jpeg','jpg');
+    FILES.push({id:++fileSeq, name:f.name, type:ext, size:f.size, blob:f, src, url: isPdf ? null : URL.createObjectURL(f)});
+    n++;
+  }
+  loaded = FILES.length>0;
+  if(cur!==1) go(1); else renderFiles();
+  if(n) toast(`已加入 ${n} 個檔案（${SRC_NAME[src]}）`);
+  if(skip.length) setTimeout(()=>toast('不支援的格式已略過：'+skip.slice(0,3).join('、')+(skip.length>3?' 等':'')), n?1900:0);
 }
+function removeFile(id){
+  const i = FILES.findIndex(f=>f.id===id); if(i<0) return;
+  if(FILES[i].url) URL.revokeObjectURL(FILES[i].url);
+  FILES.splice(i,1); loaded = FILES.length>0; renderFiles();
+}
+function clearFiles(){ FILES.splice(0).forEach(f=>f.url&&URL.revokeObjectURL(f.url)); loaded=false; renderFiles(); }
+function loadDemo(){
+  for(let i=FILES.length-1;i>=0;i--) if(FILES[i].src==='demo') FILES.splice(i,1);
+  DOCS.forEach(d=>FILES.push({id:++fileSeq, name:d.f, type:d.t, size:null, blob:null, src:'demo', url:null}));
+  loaded = true; renderFiles(); toast('已載入 14 張示範單據（假資料）');
+}
+function renderFiles(){
+  const by = {}; FILES.forEach(f=>by[f.src]=(by[f.src]||0)+1);
+  $('#flisthead').innerHTML = FILES.length ? `<b>已選 ${FILES.length} 個檔案</b>
+    <span class="small muted">${Object.entries(by).map(([k,v])=>SRC_NAME[k]+' '+v).join('・')}</span>
+    <button class="ghost" style="margin-left:auto" onclick="clearFiles()">清除全部</button>` : '';
+  $('#flist').innerHTML = FILES.length ? FILES.map(f=>`<div class="fitem">
+      <span class="ico">${f.url?`<img src="${f.url}" alt="">`:esc(f.type.toUpperCase())}</span>
+      <span class="info"><span class="nm" title="${esc(f.name)}">${esc(f.name)}</span>
+        <span class="sub"><span class="src ${f.src}">${SRC_NAME[f.src]}</span>${fmtSize(f.size)}</span></span>
+      <button class="rm" title="移除" onclick="removeFile(${f.id})">×</button></div>`).join('')
+    : '<div class="small muted">尚未選擇檔案。可以先按上方「載入示範檔」看整個流程。</div>';
+}
+
+/* 本機選檔、拖放、貼上 */
+$('#fileIn').addEventListener('change', e=>{ addFiles([...e.target.files],'local'); e.target.value=''; });
+$('#drop').addEventListener('click', ()=>$('#fileIn').click());
+document.addEventListener('dragover', e=>{ if(e.dataTransfer?.types?.includes('Files')){ e.preventDefault(); $('#drop').classList.add('over'); } });
+document.addEventListener('dragleave', e=>{ if(!e.relatedTarget) $('#drop').classList.remove('over'); });
+document.addEventListener('drop', e=>{ $('#drop').classList.remove('over'); if(!e.dataTransfer?.files?.length) return; e.preventDefault(); addFiles([...e.dataTransfer.files],'local'); });
+function pastedName(type, i){
+  const d = new Date(), p = n=>String(n).padStart(2,'0');
+  return `貼上_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}${i?'_'+(i+1):''}.${(type.split('/')[1]||'png').replace('jpeg','jpg')}`;
+}
+document.addEventListener('paste', e=>{
+  if(e.target.closest && e.target.closest('input,textarea')) return;
+  const files = [...(e.clipboardData?.items||[])].filter(it=>it.kind==='file').map(it=>it.getAsFile()).filter(Boolean);
+  if(!files.length) return;
+  e.preventDefault();
+  // 截圖貼上時瀏覽器一律叫 image.png，改成有時間的檔名；從檔案總管複製的檔案保留原檔名
+  addFiles(files.map((f,i)=> f.name && f.name!=='image.png' ? f : new File([f], pastedName(f.type,i), {type:f.type})), 'paste');
+});
+async function pasteFromButton(){
+  if(!navigator.clipboard?.read) return toast('這個瀏覽器不能用按鈕讀剪貼簿，請按 Ctrl+V 貼上');
+  try{
+    const items = await navigator.clipboard.read(), out = [];
+    for(const it of items){ const t = it.types.find(x=>x.startsWith('image/')); if(t){ const b = await it.getType(t); out.push(new File([b], pastedName(t,out.length), {type:t})); } }
+    if(!out.length) return toast('剪貼簿裡沒有圖片');
+    addFiles(out,'paste');
+  }catch(err){ toast('瀏覽器沒有允許讀取剪貼簿，請改按 Ctrl+V 貼上'); }
+}
+
+/* 雲端設定（只存在這台電腦的瀏覽器） */
+const CLOUD_DEFAULT = { gKey:'', gClient:'', gApp:'', oClient:'' };   // 可在這裡填入預設值，讓所有使用者共用
+const CLOUD_KEYS = Object.keys(CLOUD_DEFAULT);
+function cloudCfg(){ let c={}; try{ c=JSON.parse(localStorage.getItem('ocrCloudCfg')||'{}'); }catch(e){} return {...CLOUD_DEFAULT, ...Object.fromEntries(Object.entries(c).filter(([,v])=>v))}; }
+function openCloud(){ const c=cloudCfg(); CLOUD_KEYS.forEach(k=>$('#'+k).value=c[k]); $('#oRedirect').textContent=pageUrl(); $('#cloudDlg').showModal(); }
+function saveCloud(){ const c={}; CLOUD_KEYS.forEach(k=>c[k]=$('#'+k).value.trim()); try{ localStorage.setItem('ocrCloudCfg',JSON.stringify(c)); }catch(e){ return toast('瀏覽器不允許儲存設定'); } $('#cloudDlg').close(); toast('設定已儲存'); }
+function clearCloud(){ try{ localStorage.removeItem('ocrCloudCfg'); }catch(e){} CLOUD_KEYS.forEach(k=>$('#'+k).value=CLOUD_DEFAULT[k]); toast('已清除'); }
+function pageUrl(){ return location.origin + location.pathname.replace(/index\.html$/,''); }
+function loadScript(src){ return new Promise((ok,ng)=>{ if(document.querySelector(`script[src="${src}"]`)) return ok(); const el=document.createElement('script'); el.src=src; el.onload=ok; el.onerror=()=>ng(new Error('無法載入 '+src)); document.head.appendChild(el); }); }
+function needCfg(msg){ toast(msg); setTimeout(openCloud, 400); }
+async function fetchAsFile(url, name, mime, headers){
+  const r = await fetch(url, {headers}); if(!r.ok) throw new Error(name+' 下載失敗（'+r.status+'）');
+  const b = await r.blob(); return new File([b], name, {type: mime || b.type});
+}
+
+// OneDrive 登入後會把彈出視窗導回本頁，這時要載入 OneDrive.js 把結果交回主視窗
+if(window.opener && /access_token|error=|code=/.test(location.hash+location.search)) loadScript('https://js.live.net/v7.2/OneDrive.js');
+
+/* Google Drive：Google Picker + Drive API（drive.file 權限，只能讀你選的檔案） */
+let gToken = null, gTokenExp = 0;
+async function pickGoogle(){
+  const c = cloudCfg();
+  if(!c.gKey || !c.gClient || !c.gApp) return needCfg('請先填 Google Drive 的 API 金鑰、用戶端 ID、專案編號');
+  if(location.protocol==='file:') return toast('Google Drive 要從網址開啟（例如 GitHub Pages），不能直接開本機的 HTML 檔');
+  try{
+    toast('正在連線 Google…');
+    await Promise.all([loadScript('https://apis.google.com/js/api.js'), loadScript('https://accounts.google.com/gsi/client')]);
+    await new Promise(ok=>gapi.load('picker', ok));
+    if(!gToken || Date.now() > gTokenExp){
+      const resp = await new Promise((ok,ng)=>{
+        const tc = google.accounts.oauth2.initTokenClient({client_id:c.gClient, scope:'https://www.googleapis.com/auth/drive.file',
+          callback: r=> r.error ? ng(new Error(r.error)) : ok(r), error_callback: e=>ng(new Error(e.type==='popup_closed'?'登入視窗被關閉':(e.type||'登入失敗')))});
+        tc.requestAccessToken({prompt: gToken ? '' : 'consent'});
+      });
+      gToken = resp.access_token; gTokenExp = Date.now() + (resp.expires_in-60)*1000;
+    }
+    const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
+      .setMimeTypes('image/png,image/jpeg,image/webp,image/bmp,image/gif,image/tiff,application/pdf').setIncludeFolders(true);
+    const docs = await new Promise(ok=>{
+      new google.picker.PickerBuilder().addView(view).addView(new google.picker.DocsUploadView())
+        .enableFeature(google.picker.Feature.MULTISELECT_ENABLED).setOAuthToken(gToken).setDeveloperKey(c.gKey).setAppId(c.gApp)
+        .setLocale('zh-TW').setTitle('選擇要辨識的單據')
+        .setCallback(d=>{ if(d.action===google.picker.Action.PICKED) ok(d.docs); else if(d.action===google.picker.Action.CANCEL) ok([]); })
+        .build().setVisible(true);
+    });
+    if(!docs.length) return;
+    toast(`正在從 Google Drive 下載 ${docs.length} 個檔案…`);
+    const files = await Promise.all(docs.map(d=>fetchAsFile(`https://www.googleapis.com/drive/v3/files/${d.id}?alt=media`, d.name, d.mimeType, {Authorization:'Bearer '+gToken})));
+    addFiles(files,'gdrive');
+  }catch(err){ console.error(err); toast('Google Drive：'+err.message); }
+}
+
+/* OneDrive：OneDrive File Picker v7.2（個人版與公司/學校版都可以） */
+async function pickOneDrive(){
+  const c = cloudCfg();
+  if(!c.oClient) return needCfg('請先填 OneDrive 的應用程式識別碼');
+  if(location.protocol==='file:') return toast('OneDrive 要從網址開啟（例如 GitHub Pages），不能直接開本機的 HTML 檔');
+  try{
+    toast('正在開啟 OneDrive…');
+    await loadScript('https://js.live.net/v7.2/OneDrive.js');
+    const res = await new Promise((ok,ng)=>OneDrive.open({
+      clientId: c.oClient, action: 'download', multiSelect: true,
+      advanced: { redirectUri: pageUrl(), filter: '.jpg,.jpeg,.png,.webp,.bmp,.gif,.tif,.tiff,.pdf' },
+      success: ok, cancel: ()=>ok({value:[]}), error: e=>ng(new Error(e?.message||String(e)))
+    }));
+    const items = res.value||[]; if(!items.length) return;
+    toast(`正在從 OneDrive 下載 ${items.length} 個檔案…`);
+    const files = await Promise.all(items.map(it=>fetchAsFile(it['@microsoft.graph.downloadUrl'], it.name, it.file?.mimeType)));
+    addFiles(files,'onedrive');
+  }catch(err){ console.error(err); toast('OneDrive：'+err.message); }
+}
+
 /* 步驟 2 */
 function renderOcr(){
   if(!loaded){$('#ocrlist').innerHTML='<div class="small muted">請先在步驟 1 載入檔案。</div>';return;}
-  $('#ocrlist').innerHTML = DOCS.map(d=>`<div class="ocrrow"><span class="nm">${d.f}</span>
+  const real = FILES.filter(f=>f.src!=='demo').length;
+  $('#ocrlist').innerHTML = (real?`<div class="reason" style="margin:0 0 10px">你已選了 ${real} 個真實檔案。<b>OCR 辨識是下一項要完成的功能</b>，目前這一步之後還是用示範資料跑流程。</div>`:'') + DOCS.map(d=>`<div class="ocrrow"><span class="nm">${d.f}</span>
     <span class="prog"><i id="p${d.id}" style="width:${ocrDone?100:0}%"></i></span>
     <span class="st ${ocrDone?'ok':''}" id="s${d.id}">${ocrDone?'完成':'等待中'}</span></div>`).join('');
 }
