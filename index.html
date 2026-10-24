@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OCR 單據分類</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --text:#1d2330; --muted:#5d6676; --line:#dfe3ea;
+  --accent:#1f6feb; --accent-ink:#ffffff; --ok:#1a7f37; --warn:#9a6700; --err:#c62828; --soft:#eef3fd;
+  --paper:#fffef9; --paper-ink:#222;
+  --c-bank:#0f7c80; --c-inv:#1f6feb; --c-rcpt:#7a4cc2; --c-water:#0a8fd1; --c-power:#d08700;
+  --c-tel:#c2410c; --c-hsr:#d7263d; --c-rail:#2f6b3a; --c-taxi:#b8860b; --c-other:#6b7280;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171c; --panel:#1d2128; --text:#e6e9ef; --muted:#9aa3b2; --line:#2e343e;
+    --accent:#4c8dff; --accent-ink:#0b1220; --ok:#3fb950; --warn:#d29922; --err:#f47067; --soft:#1f2a3d;
+    --paper:#f3f1ea; --paper-ink:#222;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171c; --panel:#1d2128; --text:#e6e9ef; --muted:#9aa3b2; --line:#2e343e;
+  --accent:#4c8dff; --accent-ink:#0b1220; --ok:#3fb950; --warn:#d29922; --err:#f47067; --soft:#1f2a3d;
+  --paper:#f3f1ea; --paper-ink:#222;
+}
+*{box-sizing:border-box}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 "Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif}
+button,select,input{font:inherit;color:inherit}
+button{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.ghost{background:transparent}
+button:disabled{opacity:.45;cursor:not-allowed}
+select,input[type=text]{padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);max-width:100%}
+
+/* ===== 頂部：標題 + 步驟列 + 本步驟功能列 ===== */
+header.top{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.titlebar{display:flex;align-items:center;gap:10px;padding:10px 16px 4px;max-width:1280px;margin:0 auto}
+.titlebar h1{font-size:18px;margin:0;flex:1;min-width:0}
+.titlebar .proto{font-size:12px;color:var(--warn);border:1px solid var(--warn);border-radius:999px;padding:0 8px;white-space:nowrap}
+.stepper{display:flex;gap:4px;overflow-x:auto;padding:6px 16px;max-width:1280px;margin:0 auto;scrollbar-width:thin}
+.stepbtn{display:flex;align-items:center;gap:8px;border:none;background:transparent;padding:6px 10px;border-radius:10px;flex:1 0 auto;min-width:118px;text-align:left;position:relative}
+.stepbtn .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);font-weight:700;font-size:13px;color:var(--muted);flex:none}
+.stepbtn .lbl{display:flex;flex-direction:column;line-height:1.25}
+.stepbtn .lbl b{font-size:14px;font-weight:600}
+.stepbtn .lbl small{font-size:11px;color:var(--muted)}
+.stepbtn.done .n{background:var(--ok);border-color:var(--ok);color:#fff}
+.stepbtn.cur{background:var(--soft)}
+.stepbtn.cur .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stepbtn:not(:last-child)::after{content:"";position:absolute;right:-4px;top:50%;width:8px;height:2px;background:var(--line)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 16px 10px;max-width:1280px;margin:0 auto;border-top:1px dashed var(--line)}
+.actions .hint{color:var(--muted);font-size:13px;margin-right:auto;min-width:0}
+
+main{max-width:1280px;margin:0 auto;padding:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.step-view{display:none} .step-view.on{display:block}
+
+/* 分類色籤 */
+.cat{display:inline-flex;align-items:center;gap:4px;font-size:12px;border-radius:999px;padding:1px 9px;color:#fff;background:var(--c);white-space:nowrap;font-weight:500}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:14px;flex:none}
+.chip i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.chip .cnt{font-size:12px;color:var(--muted)}
+.chip.on{border-color:var(--c,var(--accent));box-shadow:inset 0 0 0 1px var(--c,var(--accent));font-weight:600}
+
+/* 步驟 1 */
+.drop{border:2px dashed var(--line);border-radius:12px;padding:28px 12px;text-align:center;color:var(--muted)}
+.drop strong{color:var(--text)}
+.flist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:14px}
+.fitem{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.fitem .ico{width:30px;height:36px;border-radius:4px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);flex:none}
+.fitem .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+
+/* 步驟 2 */
+.ocrrow{display:grid;grid-template-columns:minmax(0,1fr) 160px 70px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ocrrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog>i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.ocrrow .st{font-size:12px;text-align:right;color:var(--muted)}
+.ocrrow .st.ok{color:var(--ok)}
+
+/* 步驟 3：分類主畫面 */
+.classify{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.doc{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:8px;cursor:pointer;position:relative;min-width:0}
+.doc:hover{border-color:var(--accent)}
+.doc.sel{outline:2px solid var(--accent);outline-offset:1px}
+.doc .thumb{height:96px;border-radius:6px;background:var(--paper);color:var(--paper-ink);overflow:hidden;font-size:9px;line-height:1.35;padding:6px 8px;border-top:4px solid var(--c)}
+.doc .thumb b{font-size:10px}
+.doc .meta{display:flex;align-items:center;gap:6px;margin-top:6px}
+.doc .nm{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px}
+.doc .conf{font-size:11px;color:var(--muted);margin-left:auto}
+.doc .conf.low{color:var(--err);font-weight:600}
+.doc .meta input[type=checkbox]{width:16px;height:16px;margin:0}
+.doc .flag{position:absolute;top:10px;right:10px;font-size:11px;background:var(--err);color:#fff;border-radius:999px;padding:0 7px}
+.group-h{display:flex;align-items:center;gap:8px;margin:14px 0 8px;font-weight:600}
+.group-h:first-child{margin-top:0}
+
+.detail{position:sticky;top:190px;max-height:calc(100vh - 210px);overflow:auto}
+.paper{background:var(--paper);color:var(--paper-ink);border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.6;border-top:6px solid var(--c);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.paper h4{margin:0 0 6px;font-size:15px;text-align:center}
+.paper mark{background:#ffe58a;color:inherit;border-radius:2px;padding:0 1px}
+.kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 8px;align-items:center;font-size:14px;margin-top:10px}
+.kv input{width:100%}
+.cands{display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.cand{display:grid;grid-template-columns:92px minmax(0,1fr) 40px;gap:8px;align-items:center;font-size:13px}
+.cand .b{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.cand .b>i{display:block;height:100%;background:var(--c)}
+.reason{font-size:13px;background:var(--soft);border-radius:8px;padding:8px 10px;margin-top:8px}
+.catpick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.catpick button{padding:3px 10px;font-size:13px;border-radius:999px}
+.catpick button.on{background:var(--c);border-color:var(--c);color:#fff}
+
+/* 步驟 4：欄位核對表 */
+.tblwrap{overflow-x:auto}
+table.t{border-collapse:collapse;width:100%;font-size:14px}
+table.t th{background:var(--soft);text-align:left;white-space:nowrap;font-weight:600}
+table.t th,table.t td{border:1px solid var(--line);padding:5px 8px}
+table.t td input{width:100%;min-width:90px;border:1px solid transparent;background:transparent;padding:2px 4px;border-radius:4px}
+table.t td input:focus{border-color:var(--accent);background:var(--bg);outline:none}
+table.t td.num input{text-align:right}
+table.t tr.warn td{background:color-mix(in srgb,var(--warn) 10%,transparent)}
+
+/* 步驟 5 */
+.sumgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.sum{border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px;padding:10px 12px}
+.sum b{font-size:22px;display:block}
+.exp{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:14px}
+.exp .panel{margin:0}
+.exp h3{margin:0 0 4px;font-size:16px}
+
+/* 規則對話框 & toast */
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);max-width:760px;width:calc(100% - 32px);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.rule{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.rule input{width:100%}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1d2330;color:#fff;padding:8px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:50;max-width:calc(100% - 32px)}
+#toast.on{opacity:1}
+
+@media (max-width:900px){
+  .classify{grid-template-columns:1fr}
+  .detail{position:static;max-height:none}
+}
+@media (max-width:600px){
+  header.top{position:static}
+  .stepbtn{min-width:auto}
+  .stepbtn .lbl small{display:none}
+  .ocrrow{grid-template-columns:minmax(0,1fr) 80px 54px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .actions .hint{flex-basis:100%}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="titlebar">
+    <h1>OCR 會計單據分類</h1>
+    <span class="proto">UI 原型・假資料</span>
+    <button class="ghost" id="themeBtn" title="切換深淺色">◐</button>
+  </div>
+  <nav class="stepper" id="stepper"></nav>
+  <div class="actions" id="actions"></div>
+</header>
+
+<main>
+  <!-- 1 上傳 -->
+  <section class="step-view" data-step="1">
+    <div class="panel">
+      <div class="drop">
+        <strong>把單據圖片或 PDF 拖到這裡</strong>，或按上方「選擇檔案」<br>
+        <span class="small">支援 JPG、PNG、PDF（多頁會自動拆成單張）。所有辨識都在本機瀏覽器完成，資料不會上傳。</span>
+      </div>
+      <div class="flist" id="flist"></div>
+    </div>
+  </section>
+
+  <!-- 2 OCR -->
+  <section class="step-view" data-step="2">
+    <div class="panel">
+      <div class="small muted" style="margin-bottom:8px">辨識語言：中文繁體＋英文。完成後會自動依關鍵字與版面特徵初步分類。</div>
+      <div id="ocrlist"></div>
+    </div>
+  </section>
+
+  <!-- 3 分類 -->
+  <section class="step-view" data-step="3">
+    <div class="chips" id="chips"></div>
+    <div class="classify">
+      <div class="panel" style="padding:12px">
+        <div id="grid"></div>
+      </div>
+      <aside class="panel detail" id="detail"></aside>
+    </div>
+  </section>
+
+  <!-- 4 欄位核對 -->
+  <section class="step-view" data-step="4">
+    <div class="chips" id="chips4"></div>
+    <div class="panel">
+      <div class="small muted" style="margin-bottom:8px">每一類單據有自己的欄位。黃色列表示有欄位沒辨識到，請補上。</div>
+      <div class="tblwrap" id="tbl"></div>
+    </div>
+  </section>
+
+  <!-- 5 匯出 -->
+  <section class="step-view" data-step="5">
+    <div class="panel">
+      <div class="sumgrid" id="sumgrid"></div>
+    </div>
+    <div class="exp">
+      <div class="panel"><h3>分類 Excel</h3><div class="small muted">每一類一個工作表，另附總表（檔名、類別、日期、金額）。</div></div>
+      <div class="panel"><h3>帶入受款人 XML</h3><div class="small muted">發票與收據帶到既有的「發票清單核對」與「受款人 XML」流程（ocr.html 第 4～9 步）。</div></div>
+      <div class="panel"><h3>差旅費明細</h3><div class="small muted">高鐵、火車、計程車依日期排序，整理成國內出差旅費報告表的交通費欄。</div></div>
+      <div class="panel"><h3>帳戶清冊</h3><div class="small muted">存摺封面整理出銀行、分行、帳號、戶名，供受款人資料使用。</div></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="rulesDlg">
+  <h3 style="margin:0 0 4px">分類規則</h3>
+  <div class="small muted" style="margin-bottom:8px">OCR 文字含有這些關鍵字時加分；分數最高的類別就是建議分類。低於 70% 會標成「待確認」。</div>
+  <div id="rules"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+    <button onclick="toast('原型：規則儲存尚未接上')">儲存規則</button>
+    <button class="primary" onclick="rulesDlg.close()">關閉</button>
+  </div>
+</dialog>
+<div id="toast"></div>
+
+<script>
+const CATS = {
+  bank:  {name:'銀行帳號', c:'--c-bank',  kw:['存摺','帳號','戶名','分行','銀行'],
+          fields:['銀行','分行','帳號','戶名']},
+  inv:   {name:'發票',     c:'--c-inv',   kw:['電子發票證明聯','統一發票','發票號碼','賣方','買方'],
+          fields:['發票號碼','日期','賣方統編','賣方名稱','金額']},
+  rcpt:  {name:'收據',     c:'--c-rcpt',  kw:['收據','領據','收訖','茲收到','簽章'],
+          fields:['日期','開立人','事由','金額']},
+  water: {name:'水費',     c:'--c-water', kw:['自來水','水費','用水','度數','水號'],
+          fields:['計費期間','水號','用水度數','金額']},
+  power: {name:'電費',     c:'--c-power', kw:['電力','電費','用電','電號','流動電費'],
+          fields:['計費期間','電號','用電度數','金額']},
+  tel:   {name:'電話費',   c:'--c-tel',   kw:['電信','電話費','通話費','月租費','門號'],
+          fields:['計費期間','電話號碼','金額']},
+  hsr:   {name:'高鐵',     c:'--c-hsr',   kw:['高鐵','高速鐵路','車廂','座位','標準車廂'],
+          fields:['日期','車次','起站','訖站','金額']},
+  rail:  {name:'火車',     c:'--c-rail',  kw:['臺鐵','台鐵','自強','莒光','區間','車次'],
+          fields:['日期','車種','車次','起站','訖站','金額']},
+  taxi:  {name:'計程車',   c:'--c-taxi',  kw:['計程車','車資','車號','乘車證明','里程'],
+          fields:['日期','車號','起訖地點','金額']},
+  other: {name:'未分類',   c:'--c-other', kw:[], fields:['日期','內容','金額']},
+};
+const ORG = 'OOO單位';
+
+// 假資料：每張單據的 OCR 文字、建議分類候選、擷取欄位
+const DOCS = [
+ {f:'發票1_好好文具.png', t:'png', cat:'inv', cands:{inv:.96,rcpt:.22},
+  text:['好好文具行','<mark>電子發票證明聯</mark>','115年09-10月','AB-12345678','2026-09-15 10:21:08','隨機碼 1234　總計 1,050','<mark>賣方</mark> 12345678　<mark>買方</mark> 87654321'],
+  v:{'發票號碼':'AB-12345678','日期':'115/09/15','賣方統編':'12345678','賣方名稱':'好好文具行','金額':'1050'}},
+ {f:'發票2_天天印刷.png', t:'png', cat:'inv', cands:{inv:.94,rcpt:.30},
+  text:['天天印刷有限公司','<mark>電子發票證明聯</mark>','115年09-10月','CD-23456789','2026-09-20 15:02:44','總計 2,100','<mark>賣方</mark> 23456789　<mark>買方</mark> 87654321'],
+  v:{'發票號碼':'CD-23456789','日期':'115/09/20','賣方統編':'23456789','賣方名稱':'天天印刷有限公司','金額':'2100'}},
+ {f:'收據_講師鐘點費.jpg', t:'jpg', cat:'rcpt', cands:{rcpt:.91,other:.12},
+  text:['<mark>領據</mark>','<mark>茲收到</mark> '+ORG,'115年9月研習講師鐘點費','新臺幣 貳仟元整（2,000）','領款人：王小明（<mark>簽章</mark>）','中華民國 115 年 9 月 18 日'],
+  v:{'日期':'115/09/18','開立人':'王小明','事由':'研習講師鐘點費','金額':'2000'}},
+ {f:'收據_場地租借.pdf', t:'pdf', cat:'rcpt', cands:{rcpt:.88,inv:.25},
+  text:['示範活動中心','<mark>收據</mark>','茲收到 '+ORG+' 場地租借費','新臺幣 伍仟元整','經手人：李OO','115.09.22'],
+  v:{'日期':'115/09/22','開立人':'示範活動中心','事由':'場地租借費','金額':'5000'}},
+ {f:'存摺封面_示範銀行.jpg', t:'jpg', cat:'bank', cands:{bank:.97},
+  text:['示範商業<mark>銀行</mark>','板橋<mark>分行</mark>','<mark>存摺</mark> PASSBOOK','<mark>帳號</mark> 0123-456-789012','<mark>戶名</mark> 陳大文'],
+  v:{'銀行':'示範商業銀行','分行':'板橋分行','帳號':'0123-456-789012','戶名':'陳大文'}},
+ {f:'水費_115年9月.pdf', t:'pdf', cat:'water', cands:{water:.93,power:.18},
+  text:['OO<mark>自來水</mark>事業處','<mark>水費</mark>繳費憑證','用戶：'+ORG,'<mark>水號</mark> 9-12-345678-9','計費期間 115/07/20–115/09/18','<mark>用水度數</mark> 38 度　應繳 486 元'],
+  v:{'計費期間':'115/07/20–115/09/18','水號':'9-12-345678-9','用水度數':'38','金額':'486'}},
+ {f:'電費_115年9月.pdf', t:'pdf', cat:'power', cands:{power:.92,water:.15},
+  text:['OO<mark>電力</mark>公司','<mark>電費</mark>通知單','用戶：'+ORG,'<mark>電號</mark> 01-23-4567-89-0','計費期間 115/08/01–115/09/30','<mark>用電</mark> 412 度　應繳 1,736 元'],
+  v:{'計費期間':'115/08/01–115/09/30','電號':'01-23-4567-89-0','用電度數':'412','金額':'1736'}},
+ {f:'電話費_115年9月.pdf', t:'pdf', cat:'tel', cands:{tel:.90,inv:.35},
+  text:['OO<mark>電信</mark>股份有限公司','<mark>電話費</mark>帳單','客戶：'+ORG,'電話號碼 02-2000-0000','<mark>月租費</mark> 999　<mark>通話費</mark> 300','本期應繳 1,299'],
+  v:{'計費期間':'115/09','電話號碼':'02-2000-0000','金額':'1299'}},
+ {f:'高鐵票_台北-左營.jpg', t:'jpg', cat:'hsr', cands:{hsr:.95,rail:.40},
+  text:['<mark>高鐵</mark> 購票證明','2026/09/25　車次 0123','台北 → 左營','5 <mark>車廂</mark> 12A <mark>座位</mark>','<mark>標準車廂</mark> 全票','NT$1,490'],
+  v:{'日期':'115/09/25','車次':'0123','起站':'台北','訖站':'左營','金額':'1490'}},
+ {f:'高鐵票_左營-台北.jpg', t:'jpg', cat:'hsr', cands:{hsr:.94,rail:.42},
+  text:['<mark>高鐵</mark> 購票證明','2026/09/26　車次 0156','左營 → 台北','7 <mark>車廂</mark> 3C <mark>座位</mark>','<mark>標準車廂</mark> 全票','NT$1,490'],
+  v:{'日期':'115/09/26','車次':'0156','起站':'左營','訖站':'台北','金額':'1490'}},
+ {f:'台鐵_自強號.jpg', t:'jpg', cat:'rail', cands:{rail:.89,hsr:.38},
+  text:['<mark>臺鐵</mark>','<mark>自強</mark>號　<mark>車次</mark> 112','臺北 → 花蓮','115.09.28　08:20 開','全票 NT$440'],
+  v:{'日期':'115/09/28','車種':'自強號','車次':'112','起站':'臺北','訖站':'花蓮','金額':'440'}},
+ {f:'計程車收據_0915.jpg', t:'jpg', cat:'taxi', cands:{taxi:.87,rcpt:.40},
+  text:['<mark>計程車</mark> <mark>乘車證明</mark>','<mark>車號</mark> ABC-1234','115/09/15　14:05','<mark>里程</mark> 6.2 km','<mark>車資</mark> 285 元'],
+  v:{'日期':'115/09/15','車號':'ABC-1234','起訖地點':'','金額':'285'}},
+ {f:'計程車電子發票_0916.jpg', t:'jpg', cat:'inv', review:true, cands:{inv:.62,taxi:.58,rcpt:.20},
+  text:['OO<mark>計程車</mark>運輸合作社','<mark>電子發票證明聯</mark>','115年09-10月','EF-34567890','2026-09-16 09:40','<mark>車號</mark> XYZ-5678　總計 310'],
+  v:{'發票號碼':'EF-34567890','日期':'115/09/16','賣方統編':'','賣方名稱':'OO計程車運輸合作社','金額':'310'}},
+ {f:'掃描_不明單據.jpg', t:'jpg', cat:'other', review:true, cands:{other:.40,rcpt:.35,inv:.10},
+  text:['（影像模糊）','…費用…','金額 ??0','115 / 0? / ??'],
+  v:{'日期':'','內容':'','金額':''}},
+];
+DOCS.forEach((d,i)=>{d.id=i; d.auto=d.cat; d.checked=false;});
+
+const STEPS = [
+  {n:1, t:'上傳檔案',  s:'圖片 / PDF',      hint:'選擇或拖入要辨識的單據檔。',
+   act:[['選擇檔案','upload'],['載入示範檔','demo',1]]},
+  {n:2, t:'OCR 辨識',  s:'中文繁體＋英文',  hint:'在本機瀏覽器辨識文字，完成後自動初步分類。',
+   act:[['開始辨識','ocr',1],['辨識設定','setting']]},
+  {n:3, t:'單據分類',  s:'自動分類＋人工確認', hint:'點選單據看原圖與分類理由；勾選多張可一次改分類。',
+   act:[['全選待確認','selReview'],['批次改分類','batch'],['分類規則','rules'],['全部確認','confirmAll',1]]},
+  {n:4, t:'欄位核對',  s:'依類別擷取欄位',  hint:'依類別切換表格，核對日期、金額等欄位。',
+   act:[['只看缺欄位','missing'],['確認欄位','toExport',1]]},
+  {n:5, t:'匯出 / 帶入', s:'Excel・XML・差旅',  hint:'依用途匯出，或把發票、收據帶到受款人 XML 流程。',
+   act:[['匯出分類 Excel','exp',1],['帶入受款人 XML','exp'],['產生差旅費明細','exp'],['匯出帳戶清冊','exp']]},
+];
+
+let cur = 1, done = new Set(), filter = 'all', filter4 = 'inv', sel = 0, onlyMissing = false, loaded = false, ocrDone = false;
+
+const $ = s => document.querySelector(s);
+const cv = k => `var(${CATS[k].c})`;
+const catTag = k => `<span class="cat" style="--c:${cv(k)}">${CATS[k].name}</span>`;
+const conf = d => d.cands[d.cat] ?? 1;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1800);}
+
+function renderStepper(){
+  $('#stepper').innerHTML = STEPS.map(s=>`
+    <button class="stepbtn ${s.n===cur?'cur':''} ${done.has(s.n)?'done':''}" onclick="go(${s.n})">
+      <span class="n">${done.has(s.n)&&s.n!==cur?'✓':s.n}</span>
+      <span class="lbl"><b>${s.t}</b><small>${s.s}</small></span>
+    </button>`).join('');
+  const s = STEPS[cur-1];
+  $('#actions').innerHTML = `<span class="hint"><b>步驟 ${s.n}</b>　${s.hint}</span>` +
+    s.act.map(([l,a,p])=>`<button class="${p?'primary':''}" onclick="act('${a}')">${l}</button>`).join('') +
+    (cur>1?`<button class="ghost" onclick="go(${cur-1})">← 上一步</button>`:'') +
+    (cur<5?`<button class="ghost" onclick="next()">下一步 →</button>`:'');
+  document.querySelectorAll('.stepbtn.cur')[0]?.scrollIntoView({inline:'nearest',block:'nearest'});
+}
+function go(n){cur=n; document.querySelectorAll('.step-view').forEach(v=>v.classList.toggle('on',+v.dataset.step===n)); renderStepper(); renderView(); window.scrollTo({top:0});}
+function next(){done.add(cur); go(cur+1);}
+function renderView(){
+  if(cur===1) renderFiles();
+  if(cur===2) renderOcr();
+  if(cur===3){renderChips('#chips',filter,'setFilter'); renderGrid(); renderDetail();}
+  if(cur===4){renderChips('#chips4',filter4,'setFilter4',true); renderTable();}
+  if(cur===5) renderSummary();
+}
+
+function act(a){
+  if(a==='demo'||a==='upload'){loaded=true; renderFiles(); toast(a==='demo'?'已載入 14 張示範單據（假資料）':'原型：已用示範檔代替選檔'); return;}
+  if(a==='ocr') return runOcr();
+  if(a==='setting') return toast('原型：辨識設定尚未接上');
+  if(a==='rules'){renderRules(); return $('#rulesDlg').showModal();}
+  if(a==='selReview'){DOCS.forEach(d=>d.checked=!!d.review); renderGrid(); return toast('已勾選 '+DOCS.filter(d=>d.review).length+' 張待確認單據');}
+  if(a==='batch') return batch();
+  if(a==='confirmAll'){DOCS.forEach(d=>d.review=false); next(); return toast('分類已確認');}
+  if(a==='missing'){onlyMissing=!onlyMissing; renderTable(); return toast(onlyMissing?'只顯示缺欄位的單據':'顯示全部');}
+  if(a==='toExport') return next();
+  if(a==='exp') return toast('原型：匯出功能等 UI 確認後再接上');
+}
+
+/* 步驟 1 */
+function renderFiles(){
+  $('#flist').innerHTML = loaded ? DOCS.map(d=>`<div class="fitem"><span class="ico">${d.t.toUpperCase()}</span><span class="nm" title="${d.f}">${d.f}</span></div>`).join('')
+    : '<div class="small muted">尚未選擇檔案。可先按上方「載入示範檔」看流程。</div>';
+}
+/* 步驟 2 */
+function renderOcr(){
+  if(!loaded){$('#ocrlist').innerHTML='<div class="small muted">請先在步驟 1 載入檔案。</div>';return;}
+  $('#ocrlist').innerHTML = DOCS.map(d=>`<div class="ocrrow"><span class="nm">${d.f}</span>
+    <span class="prog"><i id="p${d.id}" style="width:${ocrDone?100:0}%"></i></span>
+    <span class="st ${ocrDone?'ok':''}" id="s${d.id}">${ocrDone?'完成':'等待中'}</span></div>`).join('');
+}
+function runOcr(){
+  if(!loaded){loaded=true; toast('先自動載入示範檔');}
+  ocrDone=false; renderOcr();
+  DOCS.forEach((d,i)=>{
+    setTimeout(()=>{$('#p'+d.id).style.width='60%'; $('#s'+d.id).textContent='辨識中';}, i*160);
+    setTimeout(()=>{$('#p'+d.id).style.width='100%'; const s=$('#s'+d.id); s.textContent='完成'; s.classList.add('ok');
+      if(i===DOCS.length-1){ocrDone=true; toast('辨識完成，已初步分類'); setTimeout(next,600);} }, i*160+500);
+  });
+}
+
+/* 步驟 3 */
+function counts(){const c={};DOCS.forEach(d=>c[d.cat]=(c[d.cat]||0)+1);return c;}
+function renderChips(el,val,fn,noAll){
+  const c=counts(); const rv=DOCS.filter(d=>d.review).length;
+  let h = noAll?'':`<button class="chip ${val==='all'?'on':''}" onclick="${fn}('all')">全部 <span class="cnt">${DOCS.length}</span></button>`+
+    (rv?`<button class="chip ${val==='review'?'on':''}" style="--c:var(--err)" onclick="${fn}('review')"><i></i>待確認 <span class="cnt">${rv}</span></button>`:'');
+  h += Object.keys(CATS).filter(k=>noAll?c[k]:true).map(k=>`<button class="chip ${val===k?'on':''}" style="--c:${cv(k)}" onclick="${fn}('${k}')"><i></i>${CATS[k].name} <span class="cnt">${c[k]||0}</span></button>`).join('');
+  $(el).innerHTML=h;
+}
+function setFilter(f){filter=f; renderChips('#chips',filter,'setFilter'); renderGrid();}
+function setFilter4(f){filter4=f; renderChips('#chips4',filter4,'setFilter4',true); renderTable();}
+function docCard(d){
+  const p = conf(d);
+  return `<div class="doc ${d.id===sel?'sel':''}" style="--c:${cv(d.cat)}" onclick="pick(${d.id})">
+    ${d.review?'<span class="flag">待確認</span>':''}
+    <div class="thumb">${d.text.slice(0,6).map(l=>l.replace(/<\/?mark>/g,'')).map((l,i)=>i?l:`<b>${l}</b>`).join('<br>')}</div>
+    <div class="nm" title="${d.f}">${d.f}</div>
+    <div class="meta"><input type="checkbox" ${d.checked?'checked':''} onclick="event.stopPropagation();DOCS[${d.id}].checked=this.checked" aria-label="勾選">${catTag(d.cat)}<span class="conf ${p<.7?'low':''}">${Math.round(p*100)}%</span></div>
+  </div>`;
+}
+function renderGrid(){
+  if(!ocrDone){$('#grid').innerHTML='<div class="small muted">請先完成步驟 2 的 OCR 辨識（或按上方「下一步」直接看示範）。</div>'; ocrDone=true; loaded=true; return setTimeout(renderGrid,0);}
+  let list = DOCS.filter(d=>filter==='all'||(filter==='review'?d.review:d.cat===filter));
+  if(filter==='all'){
+    const order = Object.keys(CATS);
+    $('#grid').innerHTML = order.filter(k=>list.some(d=>d.cat===k)).map(k=>{
+      const g=list.filter(d=>d.cat===k);
+      return `<div class="group-h">${catTag(k)}<span class="small muted">${g.length} 張</span></div><div class="grid">${g.map(docCard).join('')}</div>`;
+    }).join('');
+  } else $('#grid').innerHTML = list.length?`<div class="grid">${list.map(docCard).join('')}</div>`:'<div class="small muted">這一類沒有單據。</div>';
+}
+function pick(i){sel=i; renderGrid(); renderDetail(); if(innerWidth<=900) $('#detail').scrollIntoView({behavior:'smooth'});}
+function setCat(i,k){const d=DOCS[i]; d.cat=k; d.review=false; d.v=Object.fromEntries(CATS[k].fields.map(f=>[f,d.v[f]??''])); renderChips('#chips',filter,'setFilter'); renderGrid(); renderDetail(); toast(`已改為「${CATS[k].name}」`);}
+function renderDetail(){
+  const d = DOCS[sel]; if(!d) return;
+  const cands = Object.entries(d.cands).sort((a,b)=>b[1]-a[1]);
+  const kws = CATS[d.auto].kw.filter(k=>d.text.join('').includes(k));
+  $('#detail').innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.f}</b>${catTag(d.cat)}</div>
+    <div class="paper" style="--c:${cv(d.cat)}"><h4>${d.text[0]}</h4>${d.text.slice(1).join('<br>')}</div>
+    <div class="small muted" style="margin-top:4px">↑ 原始影像預覽（黃色為命中的分類關鍵字）</div>
+    <div class="reason"><b>建議分類：</b>${CATS[d.auto].name}（${Math.round((d.cands[d.auto]??0)*100)}%）<br>
+      ${kws.length?'命中關鍵字：'+kws.map(k=>'「'+k+'」').join(''):'沒有命中關鍵字，影像可能模糊，請人工判斷。'}
+      ${d.review&&d.auto==='inv'&&d.cands.taxi?'<br><b style="color:var(--warn)">同時像「發票」和「計程車」：</b>計程車開的電子發票，報帳時可歸計程車（差旅交通費）。':''}</div>
+    <div class="small" style="margin-top:10px;font-weight:600">候選分類</div>
+    <div class="cands">${cands.map(([k,p])=>`<div class="cand" style="--c:${cv(k)}"><span>${CATS[k].name}</span><span class="b"><i style="width:${p*100}%"></i></span><span class="small muted">${Math.round(p*100)}%</span></div>`).join('')}</div>
+    <div class="small" style="font-weight:600">改分類</div>
+    <div class="catpick">${Object.keys(CATS).map(k=>`<button style="--c:${cv(k)}" class="${d.cat===k?'on':''}" onclick="setCat(${d.id},'${k}')">${CATS[k].name}</button>`).join('')}</div>
+    <div class="small" style="margin-top:12px;font-weight:600">擷取欄位（${CATS[d.cat].name}）</div>
+    <div class="kv">${CATS[d.cat].fields.map(f=>`<label class="small muted">${f}</label><input type="text" value="${d.v[f]??''}" oninput="DOCS[${d.id}].v['${f}']=this.value" placeholder="未辨識">`).join('')}</div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button onclick="pick(${(sel-1+DOCS.length)%DOCS.length})">← 上一張</button>
+      <button class="primary" onclick="DOCS[${d.id}].review=false;pick(${(sel+1)%DOCS.length});renderChips('#chips',filter,'setFilter')">確認，下一張 →</button>
+    </div>`;
+}
+function batch(){
+  const picked = DOCS.filter(d=>d.checked);
+  if(!picked.length) return toast('請先在卡片左上角勾選單據');
+  const opts = Object.keys(CATS).map(k=>`<option value="${k}">${CATS[k].name}</option>`).join('');
+  const dlg = document.createElement('dialog');
+  dlg.innerHTML = `<h3 style="margin:0 0 8px">把 ${picked.length} 張單據改分類為</h3><select id="bsel">${opts}</select>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button id="bc">取消</button><button class="primary" id="bo">套用</button></div>`;
+  document.body.appendChild(dlg); dlg.showModal();
+  dlg.querySelector('#bc').onclick=()=>dlg.remove();
+  dlg.querySelector('#bo').onclick=()=>{const k=dlg.querySelector('#bsel').value; picked.forEach(d=>{d.checked=false; setCat(d.id,k);}); dlg.remove();};
+}
+function renderRules(){
+  $('#rules').innerHTML = Object.keys(CATS).filter(k=>k!=='other').map(k=>`<div class="rule">${catTag(k)}<input type="text" value="${CATS[k].kw.join('、')}"></div>`).join('');
+}
+
+/* 步驟 4 */
+function renderTable(){
+  if(!DOCS.some(d=>d.cat===filter4)) filter4 = DOCS[0].cat;
+  const k = filter4, fs = CATS[k].fields;
+  let rows = DOCS.filter(d=>d.cat===k);
+  const miss = d => fs.some(f=>!d.v[f]);
+  if(onlyMissing) rows = rows.filter(miss);
+  const total = rows.reduce((s,d)=>s+(+d.v['金額']||0),0);
+  $('#tbl').innerHTML = `<table class="t"><thead><tr><th>#</th><th>檔名</th>${fs.map(f=>`<th>${f}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map((d,i)=>`<tr class="${miss(d)?'warn':''}"><td>${i+1}</td><td class="small">${d.f}</td>${fs.map(f=>`<td class="${f==='金額'?'num':''}"><input value="${d.v[f]??''}" placeholder="—" oninput="DOCS[${d.id}].v['${f}']=this.value"></td>`).join('')}</tr>`).join('')||`<tr><td colspan="${fs.length+2}" class="muted small">沒有缺欄位的單據。</td></tr>`}
+    </tbody>${fs.includes('金額')?`<tfoot><tr><th colspan="${fs.length+1}" style="text-align:right">${CATS[k].name} 合計</th><th style="text-align:right">${total.toLocaleString()}</th></tr></tfoot>`:''}</table>`;
+}
+
+/* 步驟 5 */
+function renderSummary(){
+  const by = {}; DOCS.forEach(d=>{(by[d.cat]=by[d.cat]||{n:0,a:0}); by[d.cat].n++; by[d.cat].a+=(+d.v['金額']||0);});
+  $('#sumgrid').innerHTML = Object.keys(CATS).filter(k=>by[k]).map(k=>`<div class="sum" style="--c:${cv(k)}">${catTag(k)}<b>${by[k].n} 張</b><span class="small muted">${by[k].a?'合計 '+by[k].a.toLocaleString()+' 元':'—'}</span></div>`).join('');
+}
+
+/* 主題 */
+$('#themeBtn').onclick=()=>{const r=document.documentElement; const dark = r.dataset.theme ? r.dataset.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark?'light':'dark';};
+
+go(1);
+</script>
+</body>
+</html>
