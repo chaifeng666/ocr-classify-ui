@@ -1,9 +1,21 @@
-# OCR 會計單據分類（UI 原型）
+# OCR 會計單據分類
 
 OCR 辨識後，先把會計單據分類（銀行帳號、發票、收據、水費、電費、電話費、高鐵、火車、計程車），再核對欄位並匯出。
 
-- 線上預覽：https://chaifeng666.github.io/ocr-classify-ui/
-- 開發中：已完成步驟 1「選擇檔案」（本機、拖放、貼上圖片、Google Drive、OneDrive）與步驟 5「匯出」（分類 Excel、受款人 XML、差旅費明細、帳戶清冊）；OCR、分類、欄位擷取陸續完成中。
+- 線上使用：https://chaifeng666.github.io/ocr-classify-ui/
+- 所有處理都在瀏覽器裡完成，檔案不會上傳到伺服器。畫面上的示範資料全部是假資料，機關名稱一律顯示「OOO單位」。
+
+## 進度
+
+| 步驟 | 狀態 | 內容 |
+|---|---|---|
+| 1 上傳檔案 | ✅ 完成 | 本機選檔、拖放、貼上圖片（Ctrl+V）、Google Drive、OneDrive |
+| 2 OCR 辨識 | 🔧 部分 | 辨識設定（語言、版面、PDF 解析度、前處理、待確認門檻）可儲存；OCR 本身開發中 |
+| 3 單據分類 | 🔧 部分 | 分類畫面、改分類、批次改分類、刪除未分類；自動分類開發中（目前用示範資料） |
+| 4 欄位核對 | 🔧 部分 | 依類別的欄位表格；欄位擷取開發中 |
+| 5 匯出／帶入 | ✅ 完成 | 分類 Excel、匯出GBA受款XML（一位受款人多張發票、從帳戶清冊選帳號、刪除受款人、檢核）、差旅費明細、帳戶清冊 |
+
+## 說明文件
+
+- Google Drive／OneDrive 金鑰申請：[SETUP.md](SETUP.md)
 - Excel 匯出使用 [SheetJS](https://sheetjs.com/)（Apache 2.0，放在 `lib/`）。
-- Google Drive／OneDrive 要先申請金鑰，請看 [SETUP.md](SETUP.md)。
-- 畫面上的資料全部是假資料，機關名稱一律顯示「OOO單位」。
