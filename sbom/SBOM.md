@@ -1,6 +1,6 @@
 # SBOM 軟體物料清單
 
-產生時間：2026-10-25T00:27:19+00:00　格式：CycloneDX 1.5（[sbom.cdx.json](sbom.cdx.json)）
+產生時間：2026-10-25T00:35:36+00:00　格式：CycloneDX 1.5（[sbom.cdx.json](sbom.cdx.json)）
 
 檢查目標：**不使用中國大陸來源的元件、模型、字型、CDN。**
 
@@ -32,7 +32,7 @@
 | 13 | OneDrive File Picker SDK（OneDrive.js） | 7.2 | Microsoft API 使用條款 | Microsoft Corporation | 美國 | js.live.net（只有按「OneDrive」時才載入） | ✅ 通過 |
 | 14 | GitHub Pages（網站託管） | — | GitHub 服務條款 | GitHub, Inc.（Microsoft） | 美國 | chaifeng666.github.io | ✅ 通過 |
 | 15 | 政府電子採購網 拒絕往來廠商查詢（外部連結） | — | 政府網站 | 行政院公共工程委員會 | 臺灣 | web.pcc.gov.tw（只有按「查拒往」時開新分頁） | ✅ 通過 |
-| 16 | 財金公司 金融機構代號查詢（外部連結） | — | 政府/公營事業網站 | 財金資訊股份有限公司 | 臺灣 | www.fisc.com.tw（只有按「查銀行代號」時開新分頁） | ✅ 通過 |
+| 16 | 中央銀行 全國金融機構一覽查詢（外部連結） | — | 政府網站 | 中央銀行 | 臺灣 | www.cbc.gov.tw（只有按「查銀行代號」時開新分頁） | ✅ 通過 |
 | 17 | 離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command | — | 專案自有 | chaifeng666 | 臺灣 | repo offline/ | ✅ 通過 |
 
 ## ocr-app（本地 OCR 小程式 ocr.html／OCR-offline.zip）
@@ -68,7 +68,7 @@
 - **Noto Sans TC（思源黑體繁中）**：Noto Sans CJK／思源黑體由 Adobe 與 Google 發行，但依公開資料，中文字形由合作字型廠「常州華文」（中國大陸）參與設計。離線版已不載入；網路版建議改用電腦內建字型（見下方替代方案）。
 - **PingFang TC（蘋方，系統字型，僅備援）**：依公開資料，蘋方由 Apple 與「常州華文」（中國大陸）合作設計。離線版已從字型清單移除；網路版建議一併移除。
 - **政府電子採購網 拒絕往來廠商查詢（外部連結）**：按鈕以網址參數 suppNo 帶入統編，開新分頁顯示查詢結果；只傳送統編（公開資料），與手動查詢相同。
-- **財金公司 金融機構代號查詢（外部連結）**：只開啟查詢頁，不帶任何資料；分行名稱複製到使用者剪貼簿由使用者自行貼上。總行 3 碼對照表內建在 index.html。
+- **中央銀行 全國金融機構一覽查詢（外部連結）**：只開啟查詢頁，不帶任何資料；分行名稱複製到使用者剪貼簿由使用者自行貼上。總行 3 碼對照表內建在 index.html。
 - **離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command**：使用系統內建 Windows PowerShell（Microsoft）或 python3（PSF）
 - **tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）**：一般版與 SIMD 加速版各一
 - **Adobe CMap 字元對照表（pdfjs-dist/cmaps）**：檔名有 GB、UniGB 的是「簡體字編碼」的對照表，由 Adobe 製作，不是中國大陸來源的元件；只用來讀取用該編碼存的 PDF。

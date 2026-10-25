@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:678bd6ad-362e-4e0e-90e2-91d3b8b75e02",
+  "serialNumber": "urn:uuid:19aa3441-3283-4e06-804c-d1ca8fad81a9",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-10-25T00:27:19+00:00",
+    "timestamp": "2026-10-25T00:35:36+00:00",
     "component": {
       "type": "application",
       "name": "OCR 輸入資料辨識（ocr-classify-ui＋ocr-app）",
@@ -62,7 +62,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "8780517d5db50d4e699ff2191ccff1e340975cb282ab9098f4661408a59cde16"
+          "content": "6da7662317b22b04fd566f8752a596e1e9be593912d6587e58732cff8d202bb4"
         }
       ]
     },
@@ -643,15 +643,15 @@
     {
       "bom-ref": "c16",
       "type": "platform",
-      "name": "財金公司 金融機構代號查詢（外部連結）",
+      "name": "中央銀行 全國金融機構一覽查詢（外部連結）",
       "version": "—",
       "supplier": {
-        "name": "財金資訊股份有限公司"
+        "name": "中央銀行"
       },
       "licenses": [
         {
           "license": {
-            "name": "政府/公營事業網站"
+            "name": "政府網站"
           }
         }
       ],
@@ -666,7 +666,7 @@
         },
         {
           "name": "取得方式",
-          "value": "www.fisc.com.tw（只有按「查銀行代號」時開新分頁）"
+          "value": "www.cbc.gov.tw（只有按「查銀行代號」時開新分頁）"
         },
         {
           "name": "用途",

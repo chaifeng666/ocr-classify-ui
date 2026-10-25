@@ -1011,7 +1011,7 @@ function renderDetail(){
     <div class="catpick">${Object.keys(CATS).map(k=>`<button style="--c:${cv(k)}" class="${d.cat===k?'on':''}" onclick="setCat(${d.id},'${k}')">${CATS[k].name}</button>`).join('')}</div>
     <div class="small" style="margin-top:12px;font-weight:600">擷取欄位（${CATS[d.cat].name}）</div>
     <div class="kv">${CATS[d.cat].fields.map(f=>`<label class="small muted">${f}</label><input type="text" value="${d.v[f]??''}" oninput="DOCS[${d.id}].v['${f}']=this.value" placeholder="未辨識">`).join('')}</div>
-    ${d.cat==='bank'?`<div style="margin-top:8px">${fiscBtn(`DOCS[${d.id}].v['銀行']`,`DOCS[${d.id}].v['分行']`)} <span class="small muted">${bankHint(d.v['銀行'])}到財金公司查 7 碼金融機構代號，查到後貼回上面的「金融機構代號」</span></div>
+    ${d.cat==='bank'?`<div style="margin-top:8px">${bankqBtn(`DOCS[${d.id}].v['銀行']`,`DOCS[${d.id}].v['分行']`)} <span class="small muted">${bankHint(d.v['銀行'])}到中央銀行查 7 碼金融機構代號，查到後貼回上面的「金融機構代號」</span></div>
       <div style="margin-top:6px"><button class="mini" title="帳號只留數字，不足 16 碼前面補零" onclick="fmtDocAcct(${d.id})">套用銀行帳號格式</button> <span class="small muted">16 位數字、前補零，例：123456789 → 0000000123456789</span></div>`:''}
     ${d.cat==='inv'?`<div style="margin-top:8px">${rvlmBtn(`DOCS[${d.id}].v['賣方統編']`)} <span class="small muted">到工程會政府電子採購網查詢賣方是否為拒絕往來廠商</span></div>`:''}
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
@@ -1262,9 +1262,9 @@ async function rvlmCheck(uni){
   try{ await navigator.clipboard.writeText(uni); }catch(e){}
   toast(`已開啟統編 ${uni} 的拒絕往來查詢結果（統編也已複製）`);
 }
-/* 財金公司金融機構代號查詢：查詢頁是 ASP.NET 表單，不能用網址帶參數，
+/* 中央銀行「全國金融機構一覽」查詢：查詢頁是表單送出，不能用網址帶參數，
    所以開新分頁並把分行名稱複製到剪貼簿；總行 3 碼用下表先提示 */
-const FISC_URL = 'https://www.fisc.com.tw/TC/Service/Branch.aspx';
+const BANKQ_URL = 'https://www.cbc.gov.tw/tw/sp-bank-qform-1.html';
 const BANK_CODES = [
   ['004','臺灣銀行',['臺灣銀行','台灣銀行']],['005','臺灣土地銀行',['土地銀行','土銀']],['006','合作金庫銀行',['合作金庫','合庫']],
   ['007','第一銀行',['第一銀行','第一商業銀行']],['008','華南銀行',['華南']],['009','彰化銀行',['彰化銀行','彰化商業銀行','彰銀']],
@@ -1286,15 +1286,15 @@ function bankCode(name){
   return hit ? {code:hit[0], name:hit[1]} : null;
 }
 const bankHint = name => { const b = bankCode(name); return b ? `總行代號 ${b.code}（${b.name}），` : ''; };
-const fiscBtn = (bankExpr, brExpr) => `<button class="mini" title="到財金公司查詢匯款用的金融機構代號（會複製分行名稱）" onclick="fiscCheck(${bankExpr},${brExpr})">查銀行代號</button>`;
-async function fiscCheck(bank, branch){
+const bankqBtn = (bankExpr, brExpr) => `<button class="mini" title="到中央銀行全國金融機構一覽查詢金融機構代號（會複製分行名稱）" onclick="bankqCheck(${bankExpr},${brExpr})">查銀行代號</button>`;
+async function bankqCheck(bank, branch){
   bank = normBank(bank); branch = String(branch||'');
   if(!branch){ const m = bank.match(/^(.*?(?:銀行|郵局|農會|漁會|合作社))(.+)$/); if(m){ bank = m[1]; branch = m[2]; } }
-  window.open(FISC_URL, '_blank', 'noopener');
-  const b = bankCode(bank), copy = branch.replace(/(分行|分社|支局)$/,'') || bank;
+  window.open(BANKQ_URL, '_blank', 'noopener');
+  const b = bankCode(bank), copy = branch || (b ? b.name : bank);
   try{ if(copy) await navigator.clipboard.writeText(copy); }catch(e){}
-  toast(b ? `已開啟財金公司查詢頁：請選「${b.code} ${b.name}」${branch?`，分行「${copy}」已複製，貼到分行名稱查詢`:''}`
-          : bank ? `已開啟財金公司查詢頁，「${copy}」已複製` : '已開啟財金公司查詢頁，請選擇銀行和分行');
+  toast(copy ? `已開啟中央銀行金融機構查詢頁：「${copy}」已複製，貼到「金融機構名稱」查詢${b?`（總行代號 ${b.code}）`:''}`
+             : '已開啟中央銀行金融機構查詢頁，請輸入金融機構名稱查詢');
 }
 function invSumText(p){
   const sum = p.invoices.reduce((a,v)=>a+num(v.receiptamt),0);
@@ -1354,7 +1354,7 @@ function renderXml(){
         k==='receipttype' ? `<select onchange="setPay(${i},'${k}',this.value)">${opt(RECEIPT_TYPES,p[k])}</select>`
         : k==='guino' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)">${rvlmBtn(`payees[${i}].guino`)}</span>
             <select class="rvlm ${p._rvlm||''}" title="拒絕往來廠商查詢結果" onchange="payees[${i}]._rvlm=this.value;this.className='rvlm '+this.value;refreshXmlCheck()">${RVLM_OPTS.map(([v,l])=>`<option value="${v}"${(p._rvlm||'')===v?' selected':''}>${l}</option>`).join('')}</select>`
-        : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button>${fiscBtn(`payees[${i}].bankname`,`''`)}</span>`
+        : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button>${bankqBtn(`payees[${i}].bankname`,`''`)}</span>`
         : `<input style="min-width:${w}px" value="${esc(p[k])}"${k==='checkamt'?` id="ca${i}"`:''}${k==='bankaccount'?' class="acct" maxlength="20"':''} oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
         <td class="small">${p.src.map(esc).join('<br>')}${p._bank?`<br><span class="muted">帳戶：${esc(p._bank)}</span>`:''}</td></tr>
       ${p.receipttype==='2'||p.invoices.length?`<tr class="invrow"><td></td><td colspan="${PAY_EDIT.length+1}">${invTable(p,i)}</td></tr>`:''}`).join('')}
