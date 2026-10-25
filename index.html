@@ -1240,17 +1240,18 @@ function invTable(p,i){
     </tbody></table>`:'<div class="small muted">還沒有發票。單據類別是「發票」時至少要有 1 張。</div>'}</div>`;
 }
 /* 拒絕往來廠商查詢（行政院公共工程委員會 政府電子採購網）
- * 該網站的查詢需要表單驗證，不能用網址直接帶入統編；所以按鈕會把統編複製到剪貼簿，再開新分頁到查詢頁，
- * 由使用者貼上查詢。統編只複製在這台電腦，不會由本網頁傳送出去。 */
+ * 查詢結果頁接受網址參數（suppNo＝廠商代碼），按鈕直接開新分頁顯示該統編的查詢結果；
+ * 統編同時複製到剪貼簿，萬一查詢頁要求重新查詢，可直接貼上。統編是公開資料，與手動查詢相同。 */
 const RVLM_URL = 'https://web.pcc.gov.tw/vms/rvlm/rvlmPublicSearch/indexSearchRvlmPublic';
+const RVLM_RESULT = uni => 'https://web.pcc.gov.tw/vms/rvlm/rvlmPublicSearch/readPublicInTimeList?suppNo=' + encodeURIComponent(uni) + '&suppName=&rvlmStatus=0';
 const RVLM_OPTS = [['','未查詢拒往'],['ok','非拒絕往來'],['bad','是拒絕往來！']];
-const rvlmBtn = expr => `<button class="mini" title="到工程會查詢是否為拒絕往來廠商（統編會先複製）" onclick="rvlmCheck(${expr})">查拒往</button>`;
+const rvlmBtn = expr => `<button class="mini" title="到工程會政府電子採購網查詢這個統編是否為拒絕往來廠商" onclick="rvlmCheck(${expr})">查拒往</button>`;
 async function rvlmCheck(uni){
-  uni = String(uni||'').trim();
-  window.open(RVLM_URL, '_blank', 'noopener');
-  if(!uni) return toast('沒有統一編號，已開啟查詢頁，請用廠商名稱查詢');
-  try{ await navigator.clipboard.writeText(uni); toast(`統編 ${uni} 已複製，請在查詢頁的「廠商代碼」欄貼上（Ctrl+V）`); }
-  catch(e){ toast(`請在查詢頁輸入統編 ${uni}`); }
+  uni = String(uni||'').replace(/\D/g,'');
+  if(!uni){ window.open(RVLM_URL, '_blank', 'noopener'); return toast('沒有統一編號，已開啟查詢頁，請用廠商名稱查詢'); }
+  window.open(RVLM_RESULT(uni), '_blank', 'noopener');
+  try{ await navigator.clipboard.writeText(uni); }catch(e){}
+  toast(`已開啟統編 ${uni} 的拒絕往來查詢結果（統編也已複製）`);
 }
 function invSumText(p){
   const sum = p.invoices.reduce((a,v)=>a+num(v.receiptamt),0);

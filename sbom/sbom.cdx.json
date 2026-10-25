@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:a08aaa2c-f58e-4ae5-8b69-3ebd92123f59",
+  "serialNumber": "urn:uuid:d4d5d2be-542f-42bc-9f23-02aafde96e5c",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-10-24T14:32:50+00:00",
+    "timestamp": "2026-10-25T00:03:39+00:00",
     "component": {
       "type": "application",
       "name": "OCR 輸入資料辨識（ocr-classify-ui＋ocr-app）",
@@ -62,7 +62,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "15ff04b3916c406b6643b4a979459d173b13206c875e57045aeb711a76495271"
+          "content": "476b63943eae06d1e29d2287fdd0c8d48fddb4eb27af7c315522ae789b23f8fa"
         }
       ]
     },
@@ -636,7 +636,7 @@
         },
         {
           "name": "說明",
-          "value": "只開啟查詢頁並把統編複製到剪貼簿，本網頁不會傳送任何資料。"
+          "value": "按鈕以網址參數 suppNo 帶入統編，開新分頁顯示查詢結果；只傳送統編（公開資料），與手動查詢相同。"
         }
       ]
     },
