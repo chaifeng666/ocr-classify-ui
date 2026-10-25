@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:d4d5d2be-542f-42bc-9f23-02aafde96e5c",
+  "serialNumber": "urn:uuid:678bd6ad-362e-4e0e-90e2-91d3b8b75e02",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-10-25T00:03:39+00:00",
+    "timestamp": "2026-10-25T00:27:19+00:00",
     "component": {
       "type": "application",
       "name": "OCR 輸入資料辨識（ocr-classify-ui＋ocr-app）",
@@ -62,7 +62,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "476b63943eae06d1e29d2287fdd0c8d48fddb4eb27af7c315522ae789b23f8fa"
+          "content": "8780517d5db50d4e699ff2191ccff1e340975cb282ab9098f4661408a59cde16"
         }
       ]
     },
@@ -642,6 +642,48 @@
     },
     {
       "bom-ref": "c16",
+      "type": "platform",
+      "name": "財金公司 金融機構代號查詢（外部連結）",
+      "version": "—",
+      "supplier": {
+        "name": "財金資訊股份有限公司"
+      },
+      "licenses": [
+        {
+          "license": {
+            "name": "政府/公營事業網站"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "應用",
+          "value": "ocr-classify-ui（單據分類，GitHub Pages／離線版）"
+        },
+        {
+          "name": "來源國",
+          "value": "臺灣"
+        },
+        {
+          "name": "取得方式",
+          "value": "www.fisc.com.tw（只有按「查銀行代號」時開新分頁）"
+        },
+        {
+          "name": "用途",
+          "value": "查詢匯款用的 7 碼金融機構代號"
+        },
+        {
+          "name": "檢查結論",
+          "value": "✅ 通過"
+        },
+        {
+          "name": "說明",
+          "value": "只開啟查詢頁，不帶任何資料；分行名稱複製到使用者剪貼簿由使用者自行貼上。總行 3 碼對照表內建在 index.html。"
+        }
+      ]
+    },
+    {
+      "bom-ref": "c17",
       "type": "application",
       "name": "離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command",
       "version": "—",
@@ -683,7 +725,7 @@
       ]
     },
     {
-      "bom-ref": "c17",
+      "bom-ref": "c18",
       "type": "application",
       "name": "ocr.html（自行開發）",
       "version": "2026-10-24",
@@ -727,7 +769,7 @@
       ]
     },
     {
-      "bom-ref": "c18",
+      "bom-ref": "c19",
       "type": "library",
       "name": "tesseract.js",
       "version": "5.1.1",
@@ -770,7 +812,7 @@
       ]
     },
     {
-      "bom-ref": "c19",
+      "bom-ref": "c20",
       "type": "library",
       "name": "tesseract.js worker",
       "version": "5.1.1",
@@ -813,7 +855,7 @@
       ]
     },
     {
-      "bom-ref": "c20",
+      "bom-ref": "c21",
       "type": "library",
       "name": "tesseract.js-core（Tesseract OCR 5＋Leptonica，WebAssembly）",
       "version": "5.1.1",
@@ -862,7 +904,7 @@
       ]
     },
     {
-      "bom-ref": "c21",
+      "bom-ref": "c22",
       "type": "data",
       "name": "Tesseract 語言資料 chi_tra（繁體中文）",
       "version": "4.0.0 best_int",
@@ -905,7 +947,7 @@
       ]
     },
     {
-      "bom-ref": "c22",
+      "bom-ref": "c23",
       "type": "data",
       "name": "Tesseract 語言資料 eng（英文）",
       "version": "4.0.0 best_int",
@@ -948,7 +990,7 @@
       ]
     },
     {
-      "bom-ref": "c23",
+      "bom-ref": "c24",
       "type": "library",
       "name": "PDF.js（pdfjs-dist）",
       "version": "3.11.174",
@@ -991,7 +1033,7 @@
       ]
     },
     {
-      "bom-ref": "c24",
+      "bom-ref": "c25",
       "type": "library",
       "name": "PDF.js worker",
       "version": "3.11.174",
@@ -1034,7 +1076,7 @@
       ]
     },
     {
-      "bom-ref": "c25",
+      "bom-ref": "c26",
       "type": "data",
       "name": "Adobe CMap 字元對照表（pdfjs-dist/cmaps）",
       "version": "3.11.174 隨附",
@@ -1074,7 +1116,7 @@
       ]
     },
     {
-      "bom-ref": "c26",
+      "bom-ref": "c27",
       "type": "library",
       "name": "SheetJS（xlsx）",
       "version": "0.18.5",
@@ -1117,7 +1159,7 @@
       ]
     },
     {
-      "bom-ref": "c27",
+      "bom-ref": "c28",
       "type": "library",
       "name": "mammoth",
       "version": "1.8.0",
@@ -1160,7 +1202,7 @@
       ]
     },
     {
-      "bom-ref": "c28",
+      "bom-ref": "c29",
       "type": "library",
       "name": "JSZip",
       "version": "3.10.1",
@@ -1203,7 +1245,7 @@
       ]
     },
     {
-      "bom-ref": "c29",
+      "bom-ref": "c30",
       "type": "data",
       "name": "手寫數字辨識模型 DIGIT_NET（自行訓練）",
       "version": "2026-10-13",
@@ -1245,7 +1287,7 @@
       ]
     },
     {
-      "bom-ref": "c30",
+      "bom-ref": "c31",
       "type": "platform",
       "name": "jsDelivr CDN",
       "version": "—",
@@ -1285,7 +1327,7 @@
       ]
     },
     {
-      "bom-ref": "c31",
+      "bom-ref": "c32",
       "type": "file",
       "name": "系統字型：Microsoft JhengHei／PingFang TC／Noto Sans TC",
       "version": "系統內建",
@@ -1327,7 +1369,7 @@
       ]
     },
     {
-      "bom-ref": "c32",
+      "bom-ref": "c33",
       "type": "application",
       "name": "離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command",
       "version": "—",
@@ -1371,7 +1413,7 @@
       ]
     },
     {
-      "bom-ref": "c33",
+      "bom-ref": "c34",
       "type": "library",
       "name": "PaddleOCR PP-OCRv5",
       "version": "—",
@@ -1411,7 +1453,7 @@
       ]
     },
     {
-      "bom-ref": "c34",
+      "bom-ref": "c35",
       "type": "library",
       "name": "OpenCC",
       "version": "—",

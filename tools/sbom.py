@@ -66,6 +66,8 @@ add(A, 'GitHub Pages（網站託管）', '—', 'service', 'GitHub 服務條款'
     'chaifeng666.github.io', '網路版網站託管（離線版不需要）', OK)
 add(A, '政府電子採購網 拒絕往來廠商查詢（外部連結）', '—', 'service', '政府網站', '行政院公共工程委員會', '臺灣',
     'web.pcc.gov.tw（只有按「查拒往」時開新分頁）', '查詢賣方是否為拒絕往來廠商', OK, '按鈕以網址參數 suppNo 帶入統編，開新分頁顯示查詢結果；只傳送統編（公開資料），與手動查詢相同。')
+add(A, '財金公司 金融機構代號查詢（外部連結）', '—', 'service', '政府/公營事業網站', '財金資訊股份有限公司', '臺灣',
+    'www.fisc.com.tw（只有按「查銀行代號」時開新分頁）', '查詢匯款用的 7 碼金融機構代號', OK, '只開啟查詢頁，不帶任何資料；分行名稱複製到使用者剪貼簿由使用者自行貼上。總行 3 碼對照表內建在 index.html。')
 add(A, '離線啟動檔 start-windows.bat／server.ps1／start-mac-linux.command', '—', 'application', '專案自有', 'chaifeng666', '臺灣',
     'repo offline/', '離線版本機伺服器（只接受 localhost）', OK, '使用系統內建 Windows PowerShell（Microsoft）或 python3（PSF）')
 

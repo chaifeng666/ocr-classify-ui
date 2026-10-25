@@ -171,6 +171,7 @@ table.t.inv{width:auto;background:var(--panel)}
 table.t.inv th{background:var(--panel)}
 table.pay td.small:last-child{white-space:nowrap}
 table.pay td.rowno{white-space:nowrap}
+table.pay input.acct{text-align:left;font-variant-numeric:tabular-nums}
 table.pay td.rowno button{margin-left:6px}
 .pickcell{display:flex;gap:4px;align-items:center}
 button.mini{padding:2px 8px;font-size:12px}
@@ -898,7 +899,7 @@ function extractFields(k, t){
     v['事由'] = (L.find(l=>/費|款/.test(l) && !/新臺幣|新台幣/.test(l)) || '').slice(0,40);
     v['金額'] = amt;
   } else if(k==='bank'){
-    v['銀行'] = first(t, /([^\s]{2,12}(?:銀行|郵局|農會|漁會|合作社))/);
+    v['銀行'] = normBank(first(t, /([^\s]{2,12}(?:銀行|郵局|農會|漁會|合作社))/));
     v['分行'] = first(t, /([^\s]{2,8}(?:分行|分社|支局|營業部))/);
     v['金融機構代號'] = first(t, /(?:代號|代碼)[^\d\n]{0,6}(\d{3}[-\s]?\d{4})/).replace(/\D/g,'');
     v['帳號'] = first(t, /帳\s*號[:：\s]*([\d\-\s]{8,20}\d)/).replace(/\s/g,'');
@@ -1010,6 +1011,8 @@ function renderDetail(){
     <div class="catpick">${Object.keys(CATS).map(k=>`<button style="--c:${cv(k)}" class="${d.cat===k?'on':''}" onclick="setCat(${d.id},'${k}')">${CATS[k].name}</button>`).join('')}</div>
     <div class="small" style="margin-top:12px;font-weight:600">擷取欄位（${CATS[d.cat].name}）</div>
     <div class="kv">${CATS[d.cat].fields.map(f=>`<label class="small muted">${f}</label><input type="text" value="${d.v[f]??''}" oninput="DOCS[${d.id}].v['${f}']=this.value" placeholder="未辨識">`).join('')}</div>
+    ${d.cat==='bank'?`<div style="margin-top:8px">${fiscBtn(`DOCS[${d.id}].v['銀行']`,`DOCS[${d.id}].v['分行']`)} <span class="small muted">${bankHint(d.v['銀行'])}到財金公司查 7 碼金融機構代號，查到後貼回上面的「金融機構代號」</span></div>
+      <div style="margin-top:6px"><button class="mini" title="帳號只留數字，不足 16 碼前面補零" onclick="fmtDocAcct(${d.id})">套用銀行帳號格式</button> <span class="small muted">16 位數字、前補零，例：123456789 → 0000000123456789</span></div>`:''}
     ${d.cat==='inv'?`<div style="margin-top:8px">${rvlmBtn(`DOCS[${d.id}].v['賣方統編']`)} <span class="small muted">到工程會政府電子採購網查詢賣方是否為拒絕往來廠商</span></div>`:''}
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button onclick="pick(${(sel-1+DOCS.length)%DOCS.length})">← 上一張</button>
@@ -1121,9 +1124,15 @@ const INV_FIELDS = [
 const TAKE_METHODS = ['1.存入受款人帳戶','2.自領','3.郵寄','4.領回轉發','5.支用機關指定人員領取'];
 const RECEIPT_TYPES = [['0','0.其他'],['1','1.收據'],['2','2.發票']];
 const EXPLAINS = ['受款人要求','撥還零用金','員工薪津代扣款','特別費、歸墊款、暫付或預借款','郵資、禮券、共用事業費用','分攤款','稅捐及規費','出席費、審查費','取據或受領單據需核章','結匯'];
-const PAY_EDIT = [['customeruniversalno','受款人編號',110],['customername','受款人名稱',160],['guino','統一編號',96],['bankno','金融機構編號',96],['bankname','金融機構名稱',150],['bankaccount','帳號',140],['bankaccountname','戶名',110],['address','地址',150],['checkamt','金額',80],['receipttype','單據類別',90],['explain','簽開支票原因',150],['remarktext','支出用途',150]];
+const PAY_EDIT = [['customeruniversalno','受款人編號',110],['customername','受款人名稱',160],['guino','統一編號',96],['bankno','金融機構編號',96],['bankname','金融機構名稱',150],['bankaccount','帳號',160],['bankaccountname','戶名',110],['address','地址',150],['checkamt','金額',80],['receipttype','單據類別',90],['explain','簽開支票原因',150],['remarktext','支出用途',150]];
 let payees = null;
-const xcfg = {org:'', seq:'001', method:'1', explain:'受款人要求'};
+const xcfg = {org:'', seq:'001', method:'1', explain:'受款人要求', acct16:true};
+// 銀行帳號格式：只留數字，不足 16 碼前面補零（超過 16 碼不動）
+const acctFmt = s => { const n = digits(s); return n && n.length<16 ? n.padStart(16,'0') : n; };
+const acctOut = s => xcfg.acct16 ? acctFmt(s) : digits(s);
+function setAcct16(on){ xcfg.acct16 = on; saveXcfg(); payees.forEach(p=>{ if(p.bankaccount) p.bankaccount = on ? acctFmt(p.bankaccount) : digits(p.bankaccount).replace(/^0+(?=\d{8})/,''); }); renderXml(); toast(on?'已套用銀行帳號格式（16 碼、前補零）':'已取消銀行帳號格式'); }
+function fmtDocAcct(id){ const d = DOCS[id]; if(!digits(d.v['帳號'])) return toast('帳號是空的'); d.v['帳號'] = acctFmt(d.v['帳號']); renderDetail(); toast('帳號已改成 '+d.v['帳號']); }
+function fmtAllAcct(){ DOCS.filter(d=>d.cat==='bank' && digits(d.v['帳號'])).forEach(d=>d.v['帳號']=acctFmt(d.v['帳號'])); renderBankList(); toast('帳戶清冊的帳號已套用 16 碼格式'); }
 try{ Object.assign(xcfg, JSON.parse(localStorage.getItem('ocrXmlCfg')||'{}')); }catch(e){}
 const saveXcfg = () => { try{ localStorage.setItem('ocrXmlCfg', JSON.stringify(xcfg)); }catch(e){} };
 
@@ -1148,7 +1157,7 @@ function buildPayees(){
   const banks = DOCS.filter(d=>d.cat==='bank');
   for(const p of out){
     const b = banks.find(b=>b.v['戶名'] && b.v['戶名']===p.customername);
-    if(b) Object.assign(p, {bankaccount:digits(b.v['帳號']), bankaccountname:b.v['戶名'], bankno:digits(b.v['金融機構代號']), bankname:(b.v['銀行']||'')+(b.v['分行']||''), _bank:b.f});
+    if(b) Object.assign(p, {bankaccount:acctOut(b.v['帳號']), bankaccountname:b.v['戶名'], bankno:digits(b.v['金融機構代號']), bankname:(b.v['銀行']||'')+(b.v['分行']||''), _bank:b.f});
   }
   out.forEach(p=>{ if(!p.explain) p.explain = xcfg.explain; });
   return out;
@@ -1197,7 +1206,7 @@ function buildPayeeXml(){
   for(const p of payees){
     out.push(`${T1}<付款資料>`);
     for(const f of PAY_FIELDS){
-      const v = f.num ? String(p[f.k]).replace(/[,\s]/g,'') : p[f.k];
+      const v = f.num ? String(p[f.k]).replace(/[,\s]/g,'') : f.k==='bankaccount' && xcfg.acct16 ? acctFmt(p[f.k]) : p[f.k];
       if(f.opt && !v) continue;              // 選填欄位空白時不輸出
       out.push(`${T2}<${f.tag}>${xesc(v)}</${f.tag}>`);
     }
@@ -1253,6 +1262,40 @@ async function rvlmCheck(uni){
   try{ await navigator.clipboard.writeText(uni); }catch(e){}
   toast(`已開啟統編 ${uni} 的拒絕往來查詢結果（統編也已複製）`);
 }
+/* 財金公司金融機構代號查詢：查詢頁是 ASP.NET 表單，不能用網址帶參數，
+   所以開新分頁並把分行名稱複製到剪貼簿；總行 3 碼用下表先提示 */
+const FISC_URL = 'https://www.fisc.com.tw/TC/Service/Branch.aspx';
+const BANK_CODES = [
+  ['004','臺灣銀行',['臺灣銀行','台灣銀行']],['005','臺灣土地銀行',['土地銀行','土銀']],['006','合作金庫銀行',['合作金庫','合庫']],
+  ['007','第一銀行',['第一銀行','第一商業銀行']],['008','華南銀行',['華南']],['009','彰化銀行',['彰化銀行','彰化商業銀行','彰銀']],
+  ['011','上海商業儲蓄銀行',['上海商業','上海銀行']],['012','台北富邦銀行',['富邦']],['013','國泰世華銀行',['國泰世華']],
+  ['016','高雄銀行',['高雄銀行']],['017','兆豐國際商業銀行',['兆豐']],['021','花旗(台灣)銀行',['花旗']],
+  ['048','王道商業銀行',['王道']],['050','臺灣中小企業銀行',['中小企業','台企銀','臺企銀']],['052','渣打國際商業銀行',['渣打']],
+  ['053','台中商業銀行',['台中商業','臺中商業','台中銀行','臺中銀行']],['054','京城商業銀行',['京城']],['081','滙豐(台灣)商業銀行',['滙豐','匯豐']],
+  ['101','瑞興商業銀行',['瑞興']],['102','華泰商業銀行',['華泰']],['103','臺灣新光商業銀行',['新光']],['108','陽信商業銀行',['陽信']],
+  ['118','板信商業銀行',['板信']],['147','三信商業銀行',['三信']],['700','中華郵政',['郵政','郵局']],
+  ['803','聯邦商業銀行',['聯邦']],['805','遠東國際商業銀行',['遠東']],['806','元大商業銀行',['元大']],['807','永豐商業銀行',['永豐']],
+  ['808','玉山商業銀行',['玉山']],['809','凱基商業銀行',['凱基']],['810','星展(台灣)商業銀行',['星展']],['812','台新國際商業銀行',['台新']],
+  ['816','安泰商業銀行',['安泰']],['822','中國信託商業銀行',['中國信託','中信']],['823','將來商業銀行',['將來']],
+  ['824','連線商業銀行',['連線']],['826','樂天國際商業銀行',['樂天']],
+];
+// 「永豐銀行銀行」這類 OCR 重複字尾收成一個
+function normBank(s){ return String(s||'').replace(/(銀行|郵局|農會|漁會|合作社)(?:\1)+$/,'$1'); }
+function bankCode(name){
+  name = String(name||''); const hit = BANK_CODES.find(([,,al])=>al.some(a=>name.includes(a)));
+  return hit ? {code:hit[0], name:hit[1]} : null;
+}
+const bankHint = name => { const b = bankCode(name); return b ? `總行代號 ${b.code}（${b.name}），` : ''; };
+const fiscBtn = (bankExpr, brExpr) => `<button class="mini" title="到財金公司查詢匯款用的金融機構代號（會複製分行名稱）" onclick="fiscCheck(${bankExpr},${brExpr})">查銀行代號</button>`;
+async function fiscCheck(bank, branch){
+  bank = normBank(bank); branch = String(branch||'');
+  if(!branch){ const m = bank.match(/^(.*?(?:銀行|郵局|農會|漁會|合作社))(.+)$/); if(m){ bank = m[1]; branch = m[2]; } }
+  window.open(FISC_URL, '_blank', 'noopener');
+  const b = bankCode(bank), copy = branch.replace(/(分行|分社|支局)$/,'') || bank;
+  try{ if(copy) await navigator.clipboard.writeText(copy); }catch(e){}
+  toast(b ? `已開啟財金公司查詢頁：請選「${b.code} ${b.name}」${branch?`，分行「${copy}」已複製，貼到分行名稱查詢`:''}`
+          : bank ? `已開啟財金公司查詢頁，「${copy}」已複製` : '已開啟財金公司查詢頁，請選擇銀行和分行');
+}
 function invSumText(p){
   const sum = p.invoices.reduce((a,v)=>a+num(v.receiptamt),0);
   return `合計 ${sum.toLocaleString()} 元${num(p.checkamt)===sum?'':`　<span style="color:var(--warn)">（與簽發金額 ${esc(p.checkamt)} 不同）</span>`}`;
@@ -1302,6 +1345,7 @@ function renderXml(){
       <label>流水號<input type="text" value="${esc(xcfg.seq)}" maxlength="3" style="width:64px" oninput="setX('seq',this.value)"></label>
       <label>付款方式<select onchange="setX('method',this.value)">${opt(TAKE_METHODS.map(t=>[t[0],t]),xcfg.method)}</select></label>
       <label>預設簽開支票原因<select onchange="setX('explain',this.value)">${opt(EXPLAINS,xcfg.explain)}</select></label>
+      <label class="chk" style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" ${xcfg.acct16?'checked':''} onchange="setAcct16(this.checked)">套用銀行帳號格式（16 碼、前補零）</label>
       <button class="ghost" onclick="rebuildPayees()">重新帶入</button>
     </div>
     <div class="small muted" style="margin:6px 0 10px">發票依賣方統編合併成一位受款人（每張發票一筆 &lt;發票明細&gt;）；收據一張一位受款人。戶名和「銀行帳號」類單據相同時，帳戶資料會自動帶入。表格可直接修改。</div>
@@ -1310,8 +1354,8 @@ function renderXml(){
         k==='receipttype' ? `<select onchange="setPay(${i},'${k}',this.value)">${opt(RECEIPT_TYPES,p[k])}</select>`
         : k==='guino' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)">${rvlmBtn(`payees[${i}].guino`)}</span>
             <select class="rvlm ${p._rvlm||''}" title="拒絕往來廠商查詢結果" onchange="payees[${i}]._rvlm=this.value;this.className='rvlm '+this.value;refreshXmlCheck()">${RVLM_OPTS.map(([v,l])=>`<option value="${v}"${(p._rvlm||'')===v?' selected':''}>${l}</option>`).join('')}</select>`
-        : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button></span>`
-        : `<input style="min-width:${w}px" value="${esc(p[k])}"${k==='checkamt'?` id="ca${i}"`:''} oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
+        : k==='bankno' ? `<span class="pickcell"><input style="min-width:${w}px" value="${esc(p[k])}" oninput="setPay(${i},'${k}',this.value)"><button class="mini" title="從帳戶清冊挑選" onclick="openAcctPicker(${i})">選帳號</button>${fiscBtn(`payees[${i}].bankname`,`''`)}</span>`
+        : `<input style="min-width:${w}px" value="${esc(p[k])}"${k==='checkamt'?` id="ca${i}"`:''}${k==='bankaccount'?' class="acct" maxlength="20"':''} oninput="setPay(${i},'${k}',this.value)">`}</td>`).join('')}
         <td class="small">${p.src.map(esc).join('<br>')}${p._bank?`<br><span class="muted">帳戶：${esc(p._bank)}</span>`:''}</td></tr>
       ${p.receipttype==='2'||p.invoices.length?`<tr class="invrow"><td></td><td colspan="${PAY_EDIT.length+1}">${invTable(p,i)}</td></tr>`:''}`).join('')}
     </tbody></table></div>
@@ -1342,7 +1386,7 @@ function pickAcct(id){
   if(id<0){ Object.assign(p, {bankno:'', bankname:'', bankaccount:'', bankaccountname:''}); delete p._bank; }
   else{
     const d = DOCS[id];
-    Object.assign(p, {bankno:digits(d.v['金融機構代號']), bankname:(d.v['銀行']||'')+(d.v['分行']||''), bankaccount:digits(d.v['帳號']), _bank:d.f});
+    Object.assign(p, {bankno:digits(d.v['金融機構代號']), bankname:(d.v['銀行']||'')+(d.v['分行']||''), bankaccount:acctOut(d.v['帳號']), _bank:d.f});
     if($('#acctName').checked) p.bankaccountname = d.v['戶名']||'';
   }
   $('#acctDlg').close(); renderXml();
@@ -1376,7 +1420,7 @@ async function exportTravel(){
 const BANK_COLS = ['戶名','銀行','分行','金融機構代號','帳號'];
 function renderBankList(){
   const rows = DOCS.filter(d=>d.cat==='bank');
-  $('#exp-bank').innerHTML = rows.length ? `<div class="small muted" style="margin-bottom:8px">從存摺封面整理出的帳戶，帶入「匯出GBA受款XML」時會依戶名自動對應。要修改請回步驟 4。</div>
+  $('#exp-bank').innerHTML = rows.length ? `<div class="small muted" style="margin-bottom:8px">從存摺封面整理出的帳戶，帶入「匯出GBA受款XML」時會依戶名自動對應。要修改請回步驟 4。 <button class="mini" onclick="fmtAllAcct()">套用銀行帳號格式</button></div>
     <div class="tblwrap"><table class="t"><thead><tr><th>#</th>${BANK_COLS.map(c=>`<th>${c}</th>`).join('')}<th>單據</th></tr></thead><tbody>
     ${rows.map((d,i)=>`<tr${BANK_COLS.some(c=>!d.v[c])?' class="warn"':''}><td>${i+1}</td>${BANK_COLS.map(c=>`<td>${esc(d.v[c]||'')}</td>`).join('')}<td class="small">${esc(d.f)}</td></tr>`).join('')}
     </tbody></table></div>` : '<div class="small muted">沒有「銀行帳號」類單據。</div>';
