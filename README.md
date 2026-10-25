@@ -25,3 +25,7 @@ OCR 辨識後，先把會計單據分類（銀行帳號、發票、收據、水�
 
 - Google Drive／OneDrive 金鑰申請：[SETUP.md](SETUP.md)
 - Excel 匯出使用 [SheetJS](https://sheetjs.com/)（Apache 2.0，放在 `lib/`）。
+
+## 課程教材包
+
+主計人員實作課程的簡報、Prompt、素材、成果檔與題目檔，見 [course-kit/](course-kit/)。
